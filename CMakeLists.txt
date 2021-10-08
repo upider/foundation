@@ -8,5 +8,5 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 add_subdirectory(strings)
-add_subdirectory(byte)
+add_subdirectory(buffer)
 add_subdirectory(concurrency)

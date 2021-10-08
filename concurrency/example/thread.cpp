@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "thread.hpp"
+#include "thread/thread.hpp"
 
 class MyRunnable : virtual public Runnable
 {

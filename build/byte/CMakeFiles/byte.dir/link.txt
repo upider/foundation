@@ -1,1 +1,0 @@
-/opt/rh/devtoolset-8/root/usr/bin/c++   -std=c++11 -O0 -Wall -g -ggdb   CMakeFiles/byte.dir/example/main.cpp.o  -o ../../bin/byte 
