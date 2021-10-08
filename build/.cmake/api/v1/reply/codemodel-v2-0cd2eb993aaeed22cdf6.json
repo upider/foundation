@@ -1,0 +1,131 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "strings",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "strings",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "byte",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "byte",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "concurrency",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "concurrency",
+					"targetIndexes" : 
+					[
+						1,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					],
+					"name" : "foudation",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 2,
+					"id" : "byte::@d6659ecb792e702c24eb",
+					"jsonFile" : "target-byte-Debug-5a75951e67dbd6a2edfd.json",
+					"name" : "byte",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "sb::@570c1f3505a4033b9074",
+					"jsonFile" : "target-sb-Debug-b099ca5206a367e4969f.json",
+					"name" : "sb",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "strings::@89d0016ae4e25e06fd39",
+					"jsonFile" : "target-strings-Debug-b118138863107d5b0a66.json",
+					"name" : "strings",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "thread::@570c1f3505a4033b9074",
+					"jsonFile" : "target-thread-Debug-a3e526c88c0c59f6346c.json",
+					"name" : "thread",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/yuzz/codes/cpp/foundation/build",
+		"source" : "/home/yuzz/codes/cpp/foundation"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}

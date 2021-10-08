@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../byte/include/byte.hpp
+cstring
+-
+type_traits
+-
+
+/home/yuzz/codes/cpp/foundation/byte/example/main.cpp
+iostream
+-
+vector
+-
+byte.hpp
+/home/yuzz/codes/cpp/foundation/byte/example/byte.hpp
+

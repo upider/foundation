@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-8/root/usr/bin/c++   -std=c++11 -O0 -Wall -g -ggdb   CMakeFiles/thread.dir/example/thread.cpp.o CMakeFiles/thread.dir/src/rw_Lock.cpp.o CMakeFiles/thread.dir/src/signal_blocker.cpp.o CMakeFiles/thread.dir/src/thread.cpp.o  -o ../../bin/thread  -lpthread 

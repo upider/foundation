@@ -1,0 +1,7 @@
+aux_source_directory(src SRCS)
+add_executable(thread example/thread.cpp ${SRCS})
+add_executable(sb example/signal_block.cpp ${SRCS})
+target_include_directories(thread PRIVATE include)
+target_link_libraries(thread pthread)
+target_include_directories(sb PRIVATE include)
+target_link_libraries(sb pthread)

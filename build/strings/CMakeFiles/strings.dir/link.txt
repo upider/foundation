@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-8/root/usr/bin/c++   -std=c++11 -O0 -Wall -g -ggdb   CMakeFiles/strings.dir/example/main.cpp.o CMakeFiles/strings.dir/src/strings.cpp.o  -o ../../bin/strings 

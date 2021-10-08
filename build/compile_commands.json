@@ -1,0 +1,57 @@
+[
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/strings",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/strings/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/strings.dir/example/main.cpp.o -c /home/yuzz/codes/cpp/foundation/strings/example/main.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/strings/example/main.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/strings",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/strings/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/strings.dir/src/strings.cpp.o -c /home/yuzz/codes/cpp/foundation/strings/src/strings.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/strings/src/strings.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/byte",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/byte/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/byte.dir/example/main.cpp.o -c /home/yuzz/codes/cpp/foundation/byte/example/main.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/byte/example/main.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/sb.dir/example/signal_block.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/example/signal_block.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/example/signal_block.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/sb.dir/src/rw_Lock.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/src/rw_Lock.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/src/rw_Lock.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/sb.dir/src/signal_blocker.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/src/signal_blocker.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/src/signal_blocker.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/sb.dir/src/thread.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/src/thread.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/src/thread.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/thread.dir/example/thread.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/example/thread.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/example/thread.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/thread.dir/src/rw_Lock.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/src/rw_Lock.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/src/rw_Lock.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/thread.dir/src/signal_blocker.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/src/signal_blocker.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/src/signal_blocker.cpp"
+},
+{
+  "directory": "/home/yuzz/codes/cpp/foundation/build/concurrency",
+  "command": "/opt/rh/devtoolset-8/root/usr/bin/c++   -I/home/yuzz/codes/cpp/foundation/concurrency/include   -std=c++11 -O0 -Wall -g -ggdb   -o CMakeFiles/thread.dir/src/thread.cpp.o -c /home/yuzz/codes/cpp/foundation/concurrency/src/thread.cpp",
+  "file": "/home/yuzz/codes/cpp/foundation/concurrency/src/thread.cpp"
+}
+]
