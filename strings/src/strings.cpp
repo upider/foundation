@@ -216,7 +216,7 @@ inline int hex_digit_to_int(char c) {
     return x & 0xf;
 }
 
-static int unescape_c_escape_sequences(const char* source, char* dest)
+int unescape_c_escape_sequences(const char* source, char* dest)
 {
     char* d = dest;
     const char* p = source;

@@ -1,27 +1,44 @@
-#include <iostream>
 #include <stdexcept>
 
 #include "concurrency/signal.hpp"
 
-Signal::Signal(std::initializer_list<int> sigs)
-    : _sigs(sigs), _waitset(new sigset_t())
+void Signal::init()
 {
+    sigemptyset(_waitset);
+    sigemptyset(_oldset);
+    for (auto i : _sigs)
+    {
+        sigaddset(_waitset, i);
+    }
+}
+
+Signal::Signal(std::initializer_list<int> sigs)
+    : _sigs(sigs), _waitset(new sigset_t()), _oldset(new sigset_t())
+{
+    init();
 }
 
 Signal::Signal(int sig)
-    : _sigs({sig}), _waitset(new sigset_t())
+    : _sigs({sig}), _waitset(new sigset_t()), _oldset(new sigset_t())
 {
+    init();
 }
 
 Signal::Signal(const Signal &signal)
-    : _sigs(signal._sigs), _waitset(new sigset_t())
+    : _sigs(signal._sigs), _waitset(new sigset_t()), _oldset(new sigset_t())
 {
+    init();
 }
 
 Signal::~Signal()
 {
-    _thread.join();
+    if (_thread.joinable())
+    {
+        _thread.join();
+    }
+
     delete _waitset;
+    delete _oldset;
 }
 
 Signal &Signal::operator=(const Signal &signal)
@@ -31,28 +48,29 @@ Signal &Signal::operator=(const Signal &signal)
     {
         _waitset = new sigset_t();
     }
+    if (_oldset == NULL)
+    {
+        _oldset = new sigset_t();
+    }
+    init();
+    return *this;
 }
 
 void Signal::beforeWait()
 {
-    sigemptyset(_waitset);
-    for (auto i : _sigs)
-    {
-        sigaddset(_waitset, i);
-    }
-    int err = pthread_sigmask(SIG_BLOCK, _waitset, NULL);
+    int err = pthread_sigmask(SIG_SETMASK, _waitset, _oldset);
     if (err != 0)
     {
-        throw std::runtime_error("signal block error: pthread_sigmask");
+        throw std::runtime_error("Signal block error: pthread_sigmask");
     }
 }
 
 void Signal::afterWait()
 {
-    int err = pthread_sigmask(SIG_UNBLOCK, _waitset, NULL);
+    int err = pthread_sigmask(SIG_SETMASK, _oldset, NULL);
     if (err != 0)
     {
-        throw std::runtime_error("signal block error: pthread_sigmask");
+        throw std::runtime_error("Signal block error: pthread_sigmask");
     }
 }
 

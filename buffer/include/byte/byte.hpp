@@ -4,83 +4,63 @@
 #include <cstring>
 #include <type_traits>
 
-enum class byte : unsigned char {};
+enum class Byte : unsigned char {};
+
+Byte& operator|=(Byte& lhs, Byte rhs) noexcept;
+Byte& operator&=(Byte& lhs, Byte rhs) noexcept;
+Byte& operator^=(Byte& lhs, Byte rhs) noexcept;
+constexpr Byte operator~(Byte b) noexcept;
+constexpr Byte operator|(Byte lhs, Byte rhs) noexcept;
+constexpr Byte operator&(Byte lhs, Byte rhs) noexcept;
+constexpr Byte operator^(Byte lhs, Byte rhs) noexcept;
 
 template <typename I>
-constexpr auto to_byte(I value) noexcept -> typename std::enable_if<std::is_integral<I>::value, byte>::type {
-  return static_cast<byte>(value);
+constexpr auto to_byte(I value) noexcept -> typename std::enable_if<std::is_integral<I>::value, Byte>::type {
+  return static_cast<Byte>(value);
 }
 
 template <typename I = unsigned char>
-constexpr auto to_integer(byte b) noexcept -> typename std::enable_if<std::is_integral<I>::value, I>::type {
+constexpr auto to_integer(Byte b) noexcept -> typename std::enable_if<std::is_integral<I>::value, I>::type {
   return static_cast<I>(b);
 }
 
-constexpr byte operator~(byte b) noexcept {
-  return static_cast<byte>(static_cast<unsigned char>(~static_cast<unsigned int>(b)));
-}
-
-constexpr byte operator|(byte lhs, byte rhs) noexcept {
-  return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs)));
-}
-
-constexpr byte operator&(byte lhs, byte rhs) noexcept {
-  return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs)));
-}
-
-constexpr byte operator^(byte lhs, byte rhs) noexcept {
-  return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(lhs) ^ static_cast<unsigned int>(rhs)));
+template <typename I>
+constexpr auto operator<<(Byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, Byte>::type {
+  return static_cast<Byte>(static_cast<unsigned char>(static_cast<unsigned int>(b) << shift));
 }
 
 template <typename I>
-constexpr auto operator<<(byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, byte>::type {
-  return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(b) << shift));
+constexpr auto operator>>(Byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, Byte>::type {
+  return static_cast<Byte>(static_cast<unsigned char>(static_cast<unsigned int>(b) >> shift));
 }
 
 template <typename I>
-constexpr auto operator>>(byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, byte>::type {
-  return static_cast<byte>(static_cast<unsigned char>(static_cast<unsigned int>(b) >> shift));
-}
-
-byte& operator|=(byte& lhs, byte rhs) noexcept {
-  return lhs = lhs | rhs;
-}
-
-byte& operator&=(byte& lhs, byte rhs) noexcept {
-  return lhs = lhs & rhs;
-}
-
-byte& operator^=(byte& lhs, byte rhs) noexcept {
-  return lhs = lhs ^ rhs;
-}
-
-template <typename I>
-constexpr auto operator<<=(byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, byte&>::type {
+constexpr auto operator<<=(Byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, Byte&>::type {
   return b = b << shift;
 }
 
 template <typename I>
-constexpr auto operator>>=(byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, byte&>::type {
+constexpr auto operator>>=(Byte& b, I shift) noexcept -> typename std::enable_if<std::is_integral<I>::value, Byte&>::type {
   return b = b >> shift;
 }
 
 template <typename T>
-auto to_bytes(byte* dst, const T& src) -> typename std::enable_if<std::is_trivially_copyable<T>::value>::type {
-  static_assert(std::is_trivially_copyable<byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
+auto to_bytes(Byte* dst, const T& src) -> typename std::enable_if<std::is_trivially_copyable<T>::value>::type {
+  static_assert(std::is_trivially_copyable<Byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
   static_assert(std::is_trivially_copyable<T>::value,    "nstd::to_bytes requires T is trivially copyable.");
   static_cast<void>(std::memcpy(dst, &src, sizeof(T)));
 }
 
 template <typename T>
-auto to_bytes(byte* dst, const T* src, std::size_t count) -> typename std::enable_if<std::is_trivially_copyable<T>::value>::type {
-  static_assert(std::is_trivially_copyable<byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
+auto to_bytes(Byte* dst, const T* src, std::size_t count) -> typename std::enable_if<std::is_trivially_copyable<T>::value>::type {
+  static_assert(std::is_trivially_copyable<Byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
   static_assert(std::is_trivially_copyable<T>::value,    "nstd::to_bytes requires T is trivially copyable.");
-  static_cast<void>(std::memcpy(dst, src, count * sizeof(byte)));
+  static_cast<void>(std::memcpy(dst, src, count * sizeof(Byte)));
 }
 
 template <typename T>
-auto from_bytes(const byte* src) -> typename std::enable_if<std::is_trivial<T>::value, T>::type {
-  static_assert(std::is_trivially_copyable<byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
+auto from_bytes(const Byte* src) -> typename std::enable_if<std::is_trivial<T>::value, T>::type {
+  static_assert(std::is_trivially_copyable<Byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
   static_assert(std::is_trivial<T>::value,               "nstd::from_bytes requires T is trivial.");
   T dst;
   static_cast<void>(std::memcpy(&dst, src, sizeof(T)));
@@ -88,10 +68,10 @@ auto from_bytes(const byte* src) -> typename std::enable_if<std::is_trivial<T>::
 }
 
 template <typename T>
-auto from_bytes(T* dst, const byte* src, std::size_t count) -> typename std::enable_if<std::is_trivially_copyable<T>::value>::type {
-  static_assert(std::is_trivially_copyable<byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
+auto from_bytes(T* dst, const Byte* src, std::size_t count) -> typename std::enable_if<std::is_trivially_copyable<T>::value>::type {
+  static_assert(std::is_trivially_copyable<Byte>::value, "nstd::from_bytes requires byte is trivially copyable.");
   static_assert(std::is_trivially_copyable<T>::value,    "nstd::from_bytes requires T is trivially copyable.");
-  static_cast<void>(std::memcpy(dst, src, count * sizeof(byte)));
+  static_cast<void>(std::memcpy(dst, src, count * sizeof(Byte)));
 }
 
 #endif // __BYTE_HPP__

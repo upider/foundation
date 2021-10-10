@@ -34,9 +34,11 @@ public:
 private:
     std::vector<int> _sigs;
     sigset_t *_waitset;
+    sigset_t *_oldset;
     std::thread _thread;
 
 private:
+    void init();
     void beforeWait();
     void afterWait();
 

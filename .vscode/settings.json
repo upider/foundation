@@ -64,5 +64,5 @@
         "*.ipp": "cpp",
         "any": "cpp",
         "codecvt": "cpp"
-    }
+    },
 }

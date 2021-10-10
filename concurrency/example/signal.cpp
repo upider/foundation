@@ -13,19 +13,19 @@ void handler(int s)
 
 int main(int argc, char const *argv[])
 {
-    Signal sb({Signal::Signals::SIGNAL_TERM, Signal::Signals::SIGNAL_KILL});
-    sb.wait();
-    sb.wait([](int s) -> void{
+    //Signal::Signals::SIGNAL_INT = 2 = ctrl+c
+    Signal signal({Signal::Signals::SIGNAL_INT});
+    signal.wait();
+    signal.wait([](int s) -> void {
         std::cout << "reveive signal: " << s << std::endl;
     });
-    sb.wait(handler);
 
-    sb.async_wait(handler);
+    signal.async_wait(handler);
     
     std::cout << "/* message */" << std::endl;
     while (run.load())
     {
-        // std::cout << "stop running." << std::endl;
+        // std::cout << "Running." << std::endl;
     }
 
     return 0;

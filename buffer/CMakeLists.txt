@@ -1,2 +1,4 @@
-add_executable(byte example/byte.cpp)
-target_include_directories(byte PRIVATE include)
+aux_source_directory(src SRCS)
+include_directories(PRIVATE include)
+
+add_executable(byte example/byte.cpp ${SRCS})
