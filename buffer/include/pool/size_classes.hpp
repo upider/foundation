@@ -1,9 +1,8 @@
-#ifndef __SIZE_CLASSES_H__
-#define __SIZE_CLASSES_H__
+#ifndef __SIZE_CLASSES_HPP__
+#define __SIZE_CLASSES_HPP__
 
 #include "vector"
-
-#include "byte/byte.hpp"
+#include <cinttypes>
 
 class SizeClasses
 {
@@ -20,17 +19,22 @@ private:
     static const int PAGESIZE_IDX = 4;
     static const int SUBPAGE_IDX = 5;
     static const int LOG2_DELTA_LOOKUP_IDX = 6;
-    static const Byte no = to_byte(0);
-    static const Byte yes = to_byte(1);
+    static const std::int8_t no = 0;
+    static const std::int8_t yes = 1;
 
     const int _pageSize;
+    //用于计算分配内存所在二叉树层数
     const int _pageShifts;
     const int _chunkSize;
     const int _directMemoryCacheAlignment;
 
+    //size表行数
     const int _nSizes;
+    //Number of subpages size classes
     int _nSubpages;
+    //Number of size classes that are multiples of pageSize
     int _nPSizes;
+    //Maximum small size class index
     int _smallMaxSizeIdx;
     //在sizeClasses()函数中初始化
     int _lookupMaxSize;
@@ -47,10 +51,29 @@ public:
     SizeClasses(int pageSize, int pageShifts, int chunkSize, int directMemoryCacheAlignment = 1);
     ~SizeClasses();
 
+public:
+    int sizeIdx2size(int sizeIdx);
+    int sizeIdx2sizeCompute(int sizeIdx);
+    std::int64_t pageIdx2size(int pageIdx);
+    std::int64_t pageIdx2sizeCompute(int pageIdx);
+    int size2SizeIdx(int size);
+    int pages2pageIdx(int pages);
+    int pages2pageIdxFloor(int pages);
+    //内存对齐数
+    int normalizeSize(int size);
+
 private:
+    // Round size up to the nearest multiple of alignment.
+    int alignSize(int size);
+    static int normalizeSizeCompute(int size);
+    //计算size表行数
     int sizeClasses();
-    void idx2SizeTab(std::vector<int>&, std::vector<int>&);
-    void size2idxTab(std::vector<int>&);
+    //计算size表
+    int sizeClass(int index, int log2Group, int log2Delta, int nDelta);
+    //构造SizeClasses表中index、pageIndex与size的查找表
+    void idx2SizeTab(std::vector<int> &sizeIdx2sizeTab, std::vector<int> &pageIdx2sizeTab);
+    void size2idxTab(std::vector<int> &size2idxTab);
+    int pages2pageIdxCompute(int pages, bool floor);
 };
 
-#endif // __SIZE_CLASSES_H__
+#endif // __SIZE_CLASSES_HPP__

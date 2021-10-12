@@ -117,8 +117,13 @@
 #include <queue>
 #include <vector>
 
+#include "pool/page.hpp"
+
 class Arena;
 class Subpage;
+class ChunkList;
+class ByteBuffer;
+class ThreadCache;
 template <typename T>
 class PriorityQueue;
 
@@ -159,14 +164,30 @@ private:
     std::vector<HandlePriorityQueue> _runsAvail;
     std::vector<Subpage *> _subpages;
 
+    int _freeBytes;
+
+    ChunkList *_parent;
+    Chunk *_prev;
+    Chunk *_next;
+
 public:
     Chunk(Arena *arena, int pageSize, int pageShifts, int chunkSize, int maxPageIdx);
     ~Chunk();
 
-    //计算page index
-    static int pages2pageIdx(int pages);
-    static int pages2pageIdxFloor(int pages);
-    static int pages2pageIdxCompute(int pages, int pageShifts, int chunkSize, bool floor);
+    bool allocate(ByteBuffer *buf, int reqCapacity, int sizeIdx, ThreadCache *cache);
+    void free(handle_t handle, int normCapacity, ByteBuffer *buffer);
+    // void initBuf(ByteBuf* buf, ByteBuffer* nioBuffer, long handle, int reqCapacity,
+    //              PoolThreadCache threadCache);
+    // void initBufWithSubpage(PooledByteBuf<T> buf, ByteBuffer nioBuffer, long handle, int reqCapacity,
+    //                         PoolThreadCache threadCache)
+
+    int chunkSize();
+    int freeBytes();
+    void destroy();
+    static bool isUsed(handle_t handle);
+    static bool isRun(handle_t handle);
+    static bool isSubpage(handle_t handle);
+    static int bitmapIdx(handle_t handle);
 
 private:
     //插入一个run
@@ -181,7 +202,18 @@ private:
     static int runPages(handle_t handle);
     //get page offset in the chunk, 15bit
     static int runOffset(handle_t handle);
-    
+    handle_t getAvailRunByOffset(offset_t runOffset);
+    int usage();
+    int usage(int freeBytes);
+    handle_t allocateRun(int runSize);
+    int calculateRunSize(int sizeIdx);
+    int runFirstBestFit(int pageIdx);
+    handle_t splitLargeRun(long handle, int needPages);
+    handle_t allocateSubpage(int sizeIdx);
+    handle_t collapseRuns(handle_t handle);
+    handle_t collapsePast(handle_t handle);
+    handle_t collapseNext(handle_t handle);
+    static handle_t toRunHandle(offset_t runOffset, int runPages, int inUsed);
 };
 
 #endif // __CHUNK_HPP__

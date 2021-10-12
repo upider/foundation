@@ -1,6 +1,6 @@
 #include <stdexcept>
 
-#include "concurrency/signal.hpp"
+#include "signal.hpp"
 
 void Signal::init()
 {

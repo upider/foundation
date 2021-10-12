@@ -1,5 +1,5 @@
-#ifndef __THREAD_FACTORY_H__
-#define __THREAD_FACTORY_H__
+#ifndef __THREAD_FACTORY_HPP__
+#define __THREAD_FACTORY_HPP__
 
 #include <functional>
 
@@ -16,4 +16,4 @@ public:
     virtual Thread newThread(Func&& func) = 0;
 };
 
-#endif // __THREAD_FACTORY_H__
+#endif // __THREAD_FACTORY_HPP__

@@ -1,4 +1,4 @@
-#include "concurrency/rw_lock.hpp"
+#include "lock/rw_lock.hpp"
 
 RWLock::RWLock()
 {
