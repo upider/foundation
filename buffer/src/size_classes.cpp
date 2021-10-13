@@ -5,7 +5,7 @@
 
 SizeClasses::SizeClasses(int pageSize, int pageShifts, int chunkSize, int directMemoryCacheAlignment)
     : _pageSize(pageSize), _pageShifts(pageShifts), _chunkSize(chunkSize),
-      _directMemoryCacheAlignment(directMemoryCacheAlignment), _nSizes(sizeClasses())
+      _alignment(directMemoryCacheAlignment), _nSizes(sizeClasses())
 {
     //chunkSize=8192 group=11？？？？
     int group = std::log2(chunkSize) + 1 - LOG2_QUANTUM;
@@ -159,8 +159,8 @@ void SizeClasses::size2idxTab(std::vector<int> &size2idxTab)
 
 int SizeClasses::alignSize(int size)
 {
-    int delta = size & (_directMemoryCacheAlignment - 1);
-    return delta == 0 ? size : size + _directMemoryCacheAlignment - delta;
+    int delta = size & (_alignment - 1);
+    return delta == 0 ? size : size + _alignment - delta;
 }
 
 int SizeClasses::normalizeSizeCompute(int size)
@@ -180,7 +180,7 @@ int SizeClasses::normalizeSize(int size)
     {
         return _sizeIdx2sizeTab[0];
     }
-    if (_directMemoryCacheAlignment > 0)
+    if (_alignment > 0)
     {
         size = alignSize(size);
     }
@@ -224,7 +224,7 @@ int SizeClasses::size2SizeIdx(int size)
         return _nSizes;
     }
 
-    if (_directMemoryCacheAlignment > 0)
+    if (_alignment > 0)
     {
         size = alignSize(size);
     }
@@ -287,4 +287,19 @@ int SizeClasses::pages2pageIdxCompute(int pages, bool floor)
     }
 
     return pageIdx;
+}
+
+int SizeClasses::smallMaxSizeIdx()
+{
+    return _smallMaxSizeIdx;
+}
+
+int SizeClasses::nSubpages()
+{
+    return _nSubpages;
+}
+
+int SizeClasses::nSizes()
+{
+    return _nSizes;
 }

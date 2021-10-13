@@ -1,10 +1,24 @@
 #ifndef __BYTE_BUFFER_HPP__
 #define __BYTE_BUFFER_HPP__
 
+#include <cinttypes>
+
+class Chunk;
+class ThreadCache;
+
 class ByteBuffer
 {
 private:
-    /* data */
+    friend class Arena;
+
+    int _maxCapacity;
+    Chunk *chunk;
+    std::int64_t handle;
+    int offset;
+    int length;
+    int maxLength;
+    ThreadCache *cache;
+
 public:
     ByteBuffer();
     ~ByteBuffer();

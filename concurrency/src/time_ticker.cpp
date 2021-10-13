@@ -3,7 +3,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <iostream>
 #include <stdexcept>
 
 #include "timer/time_ticker.hpp"

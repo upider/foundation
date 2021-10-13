@@ -26,7 +26,7 @@ private:
     //用于计算分配内存所在二叉树层数
     const int _pageShifts;
     const int _chunkSize;
-    const int _directMemoryCacheAlignment;
+    const int _alignment;
 
     //size表行数
     const int _nSizes;
@@ -61,6 +61,9 @@ public:
     int pages2pageIdxFloor(int pages);
     //内存对齐数
     int normalizeSize(int size);
+    int nSubpages();
+    int smallMaxSizeIdx();
+    int nSizes();
 
 private:
     // Round size up to the nearest multiple of alignment.

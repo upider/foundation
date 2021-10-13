@@ -26,7 +26,7 @@ Chunk::~Chunk()
 
 void Chunk::insertAvailRun(offset_t runOffset, int pages, handle_t handle)
 {
-    auto pageIdxFloor = _arena->sizeClasses->pages2pageIdxFloor(pages);
+    auto pageIdxFloor = _arena->sizeClasses()->pages2pageIdxFloor(pages);
     _runsAvail[pageIdxFloor].push(handle);
     //insert first page of run
     insertAvailRun0(runOffset, handle);
@@ -45,7 +45,7 @@ void Chunk::insertAvailRun0(offset_t runOffset, handle_t handle)
 void Chunk::removeAvailRun(handle_t handle)
 {
     //pageIdx表示_runsAvail中的run中的page index
-    int pageIdxFloor = _arena->sizeClasses->pages2pageIdxFloor(runPages(handle));
+    int pageIdxFloor = _arena->sizeClasses()->pages2pageIdxFloor(runPages(handle));
     removeAvailRun(_runsAvail[pageIdxFloor], handle);
 }
 

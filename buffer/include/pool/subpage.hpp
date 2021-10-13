@@ -15,15 +15,16 @@ private:
     const int _runSize;
     std::int64_t *_bitmap;
 
-    Subpage *_prev;
-    Subpage *_next;
-
     int _elemSize;
     bool _doNotDestroy;
     int _maxNumElems;
     int _bitmapLength;
     int _nextAvail;
     int _numAvail;
+
+public:
+    Subpage *_prev;
+    Subpage *_next;
 
 private:
     void addToPool(Subpage *head);

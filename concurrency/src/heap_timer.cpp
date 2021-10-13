@@ -18,6 +18,7 @@ void HeapTimer::cancel()
 
 int HeapTimer::purge()
 {
+    return 0;
 }
 
 void HeapTimer::schedule(std::unique_ptr<TimerTask> task, int seconds, int micorSeconds, bool oneshot) {}
