@@ -13,25 +13,27 @@ void handler(int)
 
 int main(int argc, char const *argv[])
 {
-    signal(SIGSEGV, handler);
-    signal(SIGABRT, handler);
+    // signal(SIGSEGV, handler);
+    // signal(SIGABRT, handler);
 
-    size_t numThreads = 10;
+    size_t numThreads = 3;
     // auto blocks = {128};
-    auto blocks = {30, 200, 4096};
+    int blocks[] = {128, 1024, 2048, 4096};
     auto threads = std::vector<std::thread *>(numThreads);
 
     auto task = [&blocks]()
     {
-        for (size_t i = 0; i <30; i++)
+        for (size_t i = 0; i < 1000 * 1000 * 100; i++)
         {
-            for (auto size : blocks)
-            {
-                PoolByteBuffer *buf = new PoolByteBuffer(size);
-                // std::cout << "cap = " << buf->cap() << std::endl;
-                // std::cout << "size = "<< buf->size() << std::endl;
-                delete buf;
-            }
+            PoolByteBuffer buf1(blocks[0]);
+            PoolByteBuffer buf2(blocks[1]);
+            PoolByteBuffer buf3(blocks[2]);
+            PoolByteBuffer buf4(blocks[3]);
+
+            // PoolByteBuffer *buf = new PoolByteBuffer(size);
+            // std::cout << "cap = " << buf->cap() << std::endl;
+            // std::cout << "size = "<< buf->size() << std::endl;
+            // delete buf;
         }
     };
 

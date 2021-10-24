@@ -1,6 +1,7 @@
 #ifndef __PAGE_HEAP_HPP__
 #define __PAGE_HEAP_HPP__
 
+#include <thread>
 #include <atomic>
 #include <cinttypes>
 
@@ -19,6 +20,9 @@ private:
     };
 
 private:
+    //所属线程id
+    std::thread::id _thread_id;
+
     //空闲链表
     // 64B ~ 2048B, 增长为2的幂
     PageNode **_smalls_free = new PageNode *[SMALLS_LEN];
@@ -50,9 +54,12 @@ public:
     PageHeap();
     ~PageHeap();
 
-    static void alloc(std::uint64_t index, Byte *&data, std::atomic<PageNode *> *&atomic_head, PageHeap::PageNode **&head);
-    static void free(std::uint64_t index, Byte *data, PageHeap::PageNode **&head);
-    static void free(std::uint64_t index, Byte *data, std::atomic<PageNode *> *&atomic_head);
+    //返回所属线程id
+    std::thread::id thread_id();
+
+    static inline void alloc(std::uint64_t index, Byte *&data, std::atomic<PageNode *> *&atomic_head, PageHeap::PageNode **&head);
+    static inline void free(std::uint64_t index, Byte *data, PageHeap::PageNode **&head);
+    static inline void free(std::uint64_t index, Byte *data, std::atomic<PageNode *> *&atomic_head);
 
     void alloc_small(std::uint64_t index, Byte *&data);
     void alloc_normal(std::uint64_t index, Byte *&data);

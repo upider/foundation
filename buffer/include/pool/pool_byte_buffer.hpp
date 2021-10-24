@@ -24,15 +24,10 @@ private:
     std::uint64_t _free_idx;
     //容量
     std::uint64_t _cap;
-    //申请内存时的线程
-    std::thread::id _thread_id;
     //内存
     Byte *_data = nullptr;
     //使用大小
-    std::size_t _size = 0;
-
-private:
-    void recycle();
+    std::size_t _used = 0;
 
 public:
     PoolByteBuffer(std::size_t size);

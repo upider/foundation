@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 #include "byte/byte.hpp"
 
@@ -24,16 +25,21 @@ int main(int argc, char const *argv[])
 {
     size_t numThreads = 3;
     // auto blocks = {128};
-    int blocks[] = {128, 1024, 2048, 4096};
+    auto blocks = {128, 1024, 2048, 4096};
     auto threads = std::vector<std::thread *>(numThreads);
-    auto task = [&blocks]()
+
+    std::mutex mutex;
+
+    auto task = [&mutex, &blocks]()
     {
         for (size_t i = 0; i < 1000 * 1000 * 100; i++)
         {
-            Helper h1(blocks[0]);
-            Helper h2(blocks[1]);
-            Helper h3(blocks[2]);
-            Helper h4(blocks[3]);
+            for (auto s : blocks)
+            {
+                mutex.lock();
+                // Helper h(s);
+                mutex.unlock();
+            }
         }
     };
 

@@ -3,7 +3,7 @@
 
 #include "pool/page_heap.hpp"
 
-PageHeap::PageHeap()
+PageHeap::PageHeap() : _thread_id(std::this_thread::get_id())
 {
     init(_smalls_free, SMALLS_LEN);
     init(_normals_free, NORMALS_LEN);
@@ -23,6 +23,11 @@ PageHeap::~PageHeap()
     destory_atomic(_thread_smalls_free, SMALLS_LEN);
     destory_atomic(_thread_normals_free, NORMALS_LEN);
     destory_atomic(_thread_huges_free, HUGES_LEN);
+}
+
+std::thread::id PageHeap::thread_id() 
+{
+    return _thread_id;
 }
 
 void PageHeap::init(PageNode **&head, std::size_t size)
@@ -92,7 +97,8 @@ void PageHeap::alloc(std::uint64_t index, Byte *&data, std::atomic<PageNode *> *
         node = head[index];
     }
     // data的结果可能为空
-    data = (node == nullptr) ? nullptr : (Byte *)node;
+    // data = (node == nullptr) ? nullptr : (Byte *)node;
+    data = (Byte *)node;
 }
 
 void PageHeap::free(std::uint64_t index, Byte *data, std::atomic<PageNode *> *&atomic_head)

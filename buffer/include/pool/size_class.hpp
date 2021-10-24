@@ -8,6 +8,14 @@
 class SizeClass
 {
 public:
+    struct SizeInfo
+    {
+        PAGE_SIZE_TYPE size_type;
+        std::uint64_t cap;
+        std::uint64_t free_list_index;
+    };
+    
+public:
     SizeClass();
     ~SizeClass();
 
@@ -21,6 +29,8 @@ public:
     std::uint64_t huge_index_to_size(std::uint64_t index);
 
     PAGE_SIZE_TYPE size_type(std::uint64_t size);
+    SizeInfo size_info(std::uint64_t size);
+    
 };
 
 #endif // __SIZE_CLASS_HPP__
