@@ -3,25 +3,12 @@
 
 #include <cinttypes>
 
-class Chunk;
-class ThreadCache;
-
 class ByteBuffer
 {
-private:
-    friend class Arena;
-
-    int _maxCapacity;
-    Chunk *chunk;
-    std::int64_t handle;
-    int offset;
-    int length;
-    int maxLength;
-    ThreadCache *cache;
-
 public:
     ByteBuffer();
-    ~ByteBuffer();
+    ByteBuffer(std::size_t maxLength);
+    virtual ~ByteBuffer();
 };
 
 #endif // __BYTE_BUFFER_HPP__

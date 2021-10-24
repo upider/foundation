@@ -63,6 +63,9 @@
         "iomanip": "cpp",
         "*.ipp": "cpp",
         "any": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "cassert": "cpp",
+        "cerrno": "cpp",
+        "ios": "cpp"
     },
 }

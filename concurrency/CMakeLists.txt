@@ -1,5 +1,6 @@
 aux_source_directory(src SRCS)
-include_directories(PRIVATE include)
+
+add_library(concurrency SHARED ${SRCS})
 
 add_executable(thread example/thread.cpp ${SRCS})
 target_link_libraries(thread pthread)

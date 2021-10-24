@@ -1,5 +1,5 @@
-#ifndef __UTIL_HPP__
-#define __UTIL_HPP__
+#ifndef __UTILITY_HPP__
+#define __UTILITY_HPP__
 
 #include <cinttypes>
 #include <type_traits>
@@ -13,4 +13,12 @@ logic_rshift(T num, int shifts)
     return  tmp >> shifts;
 }
 
-#endif // __UTIL_HPP__
+//最小公倍数
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, T>::type
+gcd(T x, T y)
+{
+    return y ? gcd(y, x % y) : x;
+}
+
+#endif // __UTILITY_HPP__

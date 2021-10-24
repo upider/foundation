@@ -1,82 +1,111 @@
-#ifndef __POOL_BYTE_BUFFER_ALLOCTOR_HPP__
-#define __POOL_BYTE_BUFFER_ALLOCTOR_HPP__
+#ifndef __POOL_BYTE_BUFFER_ALLOCATOR_HPP__
+#define __POOL_BYTE_BUFFER_ALLOCATOR_HPP__
 
-#include <limits>
 #include <memory>
-#include <vector>
 
-class ByteBuffer;
-class ThreadCache;
-class Arena;
+#include "byte/byte.hpp"
+
+class PageHeap;
+class SizeClass;
 
 class PoolByteBufferAllocator
 {
 private:
-    class ThreadLocalThreadCache
-    {
-    private:
-        PoolByteBufferAllocator *_pbba;
-
-    public:
-        ThreadLocalThreadCache(PoolByteBufferAllocator *pbba);
-        ~ThreadLocalThreadCache();
-
-        ThreadCache &get();
-
-    private:
-        Arena *leastUsedArena(std::vector<Arena *> arenas);
-    };
+    SizeClass *_size_class;
 
 private:
-    static const int DEFAULT_NUM_ARENA;
-    static const int DEFAULT_PAGE_SIZE;
-    // 8192 << 11 = 16 MiB per chunk
-    static const int DEFAULT_MAX_ORDER;
-    // cache sizes
-    static const int DEFAULT_SMALL_CACHE_SIZE;
-    static const int DEFAULT_NORMAL_CACHE_SIZE;
-    // 32 kb is the default maximum capacity of the cached buffer. Similar to what is explained in
-    // 'Scalable memory allocation using jemalloc'
-    static const int DEFAULT_MAX_CACHED_BUFFER_CAPACITY;
-    // the number of threshold of allocations when cached entries will be freed up if not frequently used
-    static const int DEFAULT_CACHE_TRIM_INTERVAL;
-    static const long DEFAULT_CACHE_TRIM_INTERVAL_MILLIS;
-    static const bool DEFAULT_USE_CACHE_FOR_ALL_THREADS;
-    static const int DEFAULT_DIRECT_MEMORY_CACHE_ALIGNMENT;
-    // Use 1023 by default as we use an ArrayDeque as backing storage which will then allocate an internal array
-    // of 1024 elements. Otherwise we would allocate 2048 and only use 1024 which is wasteful.
-    static const int DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK;
-    static const int MIN_PAGE_SIZE;
-    static const int MAX_CHUNK_SIZE;
-
-private:
-    std::vector<Arena *> _arenas;
-    int _smallCacheSize;
-    int _normalCacheSize;
-    int _chunkSize;
-    ThreadLocalThreadCache *_threadLocalCache;
+    PoolByteBufferAllocator();
 
 public:
-    PoolByteBufferAllocator();
-    PoolByteBufferAllocator(int nArena, int pageSize, int maxOrder, int smallCacheSize, int normalCacheSize, int directMemoryCacheAlignment);
+    PoolByteBufferAllocator(const PoolByteBufferAllocator &) = delete;
+    PoolByteBufferAllocator &operator=(const PoolByteBufferAllocator &) = delete;
+    PoolByteBufferAllocator(PoolByteBufferAllocator &&) = delete;
+    PoolByteBufferAllocator &operator=(PoolByteBufferAllocator &&) = delete;
+
+    static PoolByteBufferAllocator &instance();
     ~PoolByteBufferAllocator();
 
     /**
-     * @brief allocate a ByteBuffer
-     * @param initialCapacity 初始容量
-     * @param maxCapacity 最大容量
+     * @brief 申请一块新的size大小的内存, 在缓存为空时使用
+     * @param size 内存大小
+     * @param data 申请内存指针
      */
-    ByteBuffer *buffer(int initialCapacity, int maxCapacity);
+    void alloc_unmanage(std::uint64_t size, Byte *&data);
+    /**
+     * @brief 申请size大小的内存
+     * @param page_type 请求page类型
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void alloc_small(std::uint64_t index, Byte *&data);
+    /**
+     * @brief 申请size大小的内存
+     * @param page_type 请求page类型
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void alloc_normal(std::uint64_t index, Byte *&data);
+    /**
+     * @brief 申请size大小的内存
+     * @param page_type 请求page类型
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void alloc_huge(std::uint64_t index, Byte *&data);
 
     /**
-     * @brief allocate a ByteBuffer
-     * @param capacity 初始容量=最大容量
+     * @brief 本线程返还内存
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
      */
-    ByteBuffer *buffer(int capacity);
+    void free_small(std::uint64_t index, Byte *data);
+    /**
+     * @brief 本线程返还内存
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void free_normal(std::uint64_t index, Byte *data);
+    /**
+     * @brief 本线程返还内存
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void free_huge(std::uint64_t index, Byte *data);
+    /**
+     * @brief 本线程返还内存
+     * @param size 内存size
+     * @param data 申请内存指针
+     */
+    void free_unmanage(std::uint64_t size, Byte *data);
 
-private:
-    static int validateAndCalculateChunkSize(int pageSize, int maxOrder);
-    static int validateAndCalculatePageShifts(int pageSize, int alignment);
+    /**
+     * @brief 由其他线程返还内存
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void thread_free_small(std::uint64_t index, Byte *data);
+    /**
+     * @brief 由其他线程返还内存
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void thread_free_normal(std::uint64_t index, Byte *data);
+    /**
+     * @brief 由其他线程返还内存
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void thread_free_huge(std::uint64_t index, Byte *data);
+    /**
+     * @brief 由其他线程返还内存
+     * @param index 内存在free_list的下标
+     * @param data 申请内存指针
+     */
+    void thread_free_unmanage(std::uint64_t index, Byte *data);
+
+    SizeClass *size_class();
+
+    std::shared_ptr<PageHeap> get_thread_local_page_heap();
 };
 
-#endif // __POOL_BYTE_BUFFER_ALLOCTOR_HPP__
+#endif // __POOL_BYTE_BUFFER_ALLOCATOR_HPP__

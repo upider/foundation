@@ -18,5 +18,4 @@ Executor::~Executor()
 {
 }
 
-
 #endif // __EXECUTOR_HPP__

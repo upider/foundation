@@ -1,6 +1,6 @@
 #include <pthread.h>
 
-#include "lock/spink_lock.hpp"
+#include "lock/spin_lock.hpp"
 
 SpinLock::SpinLock(bool process_shared)
 {

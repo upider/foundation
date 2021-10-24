@@ -1,13 +1,11 @@
 #include <sys/signal.h>
+#include <unistd.h>
 
-#include <chrono>
 #include <iostream>
 #include <thread>
-#include <vector>
 
+#include "pool/page_heap.hpp"
 #include "stack_trace/stack_trace.hpp"
-#include "pool/size_class.hpp"
-#include "pool/pool_byte_buffer_allocator.hpp"
 
 void handler(int)
 {
@@ -18,25 +16,26 @@ void handler(int)
 int main(int argc, char const *argv[])
 {
     signal(SIGSEGV, handler);
-    
-    size_t numThreads = 0;
+    signal(SIGABRT, handler);
+
+    size_t numThreads = 10;
     // auto blocks = {128};
     auto blocks = {6, 10, 11};
     auto threads = std::vector<std::thread *>(numThreads);
-    auto& allocator = PoolByteBufferAllocator::instance();
 
-    auto task = [&allocator, &blocks]()
+    auto task = [&blocks]()
     {
-        for (size_t i = 0; i < 1000 * 1000 * 30; i++)
+        for (size_t i = 0; i < 30; i++)
         {
+            PageHeap allocator;
             for (auto idx : blocks)
             {
                 Byte *data = nullptr;
                 allocator.alloc_small(idx, data);
-                if(data == nullptr)
+                if (data == nullptr)
                 {
-                    std::cout << "data == nullptr" << std::endl;
-                    data = new Byte[allocator.size_class()->small_index_to_size(idx)];
+                    // std::cout << "data == nullptr" << std::endl;
+                    data = new Byte[1ULL << idx];
                 }
                 allocator.free_small(idx, data);
             }
@@ -61,5 +60,11 @@ int main(int argc, char const *argv[])
     std::chrono::duration<int64_t, std::nano> diff = t2 - t1;
     std::cout << "time difference： " << diff.count() << " ns"
               << " = " << diff.count() / 1e9 << " seconds" << std::endl;
+
+    for (size_t i = 0; i < numThreads; i++)
+    {
+        delete threads[i];
+    }
+
     return 0;
 }

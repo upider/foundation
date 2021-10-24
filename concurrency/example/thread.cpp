@@ -2,6 +2,8 @@
 
 #include "thread/thread.hpp"
 
+thread_local int x = 100;
+
 class MyRunnable : virtual public Runnable
 {
 public:
@@ -9,11 +11,13 @@ public:
     virtual void run() override
     {
         std::cout << current_thread_name() << ":" << current_thread_pid() << std::endl;
+        std::cout << "&x = " << &x << std::endl;
     }
 };
 
 int main(int argc, char const *argv[])
 {
+    std::cout << "&x = " << &x << std::endl;
     Thread t1([&t1]()
               { std::cout << current_thread_name() << ":" << current_thread_pid() << std::endl; },
               "t1");
