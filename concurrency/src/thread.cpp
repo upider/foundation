@@ -88,8 +88,8 @@ void Thread::ThreadRunnable::run()
     _fun();
 }
 
-Thread::Thread(std::unique_ptr<Runnable> f, const std::string &name)
-    : _name(name), _target(std::move(f)) {}
+Thread::Thread(std::shared_ptr<Runnable> f, const std::string &name)
+    : _name(name), _target(f) {}
 
 Thread::Thread(std::function<void()> f, const std::string &name)
     : _name(name), _target(new ThreadRunnable(std::move(f))) {}
@@ -200,5 +200,4 @@ void Thread::cleanup()
 {
     _running.store(false);
     _pid = -1;
-    _target.release();
 }

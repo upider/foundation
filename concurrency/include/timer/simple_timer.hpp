@@ -5,7 +5,6 @@
 #include <functional>
 #include <memory>
 
-#include "lock/spin_lock.hpp"
 #include "timer/timer.hpp"
 #include "timer/timer_task.hpp"
 

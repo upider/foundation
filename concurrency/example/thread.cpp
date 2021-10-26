@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
               "t1");
     t1.start();
 
-    Thread t2(std::unique_ptr<MyRunnable>(new MyRunnable()), "t2");
+    Thread t2(std::shared_ptr<MyRunnable>(new MyRunnable()), "t2");
     t2.start();
 
     std::cout << current_thread_name() << ":" << current_thread_pid() << std::endl;

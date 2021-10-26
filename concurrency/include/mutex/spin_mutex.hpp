@@ -1,17 +1,17 @@
 #ifndef __SPIN_LOCK_HPP__
 #define __SPIN_LOCK_HPP__
 
-class SpinLock
+class SpinMutex
 {
 private:
     volatile int _lock;
 
 public:
-    SpinLock(bool process_shared = false);
-    ~SpinLock();
+    SpinMutex(bool process_shared = false);
+    ~SpinMutex();
 
-    SpinLock(const SpinLock&) = delete;
-    SpinLock& operator=(const SpinLock&) = delete;
+    SpinMutex(const SpinMutex&) = delete;
+    SpinMutex& operator=(const SpinMutex&) = delete;
 public:
     void lock();
     void unlock();

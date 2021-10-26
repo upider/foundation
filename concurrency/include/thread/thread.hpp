@@ -100,7 +100,7 @@ private:
     std::thread::id _tid;
     std::atomic_bool _running{false};
 
-    std::unique_ptr<Runnable> _target;
+    std::shared_ptr<Runnable> _target;
 
 public:
     Thread() = default;
@@ -116,7 +116,7 @@ public:
      * @param f 要执行的任务
      * @param name 线程名
      */
-    Thread(std::unique_ptr<Runnable> f, const std::string &name = "");
+    Thread(std::shared_ptr<Runnable> f, const std::string &name = "");
 
     /**
      * @brief Thread 构造函数

@@ -1,8 +1,8 @@
 #include <pthread.h>
 
-#include "lock/spin_lock.hpp"
+#include "mutex/spin_mutex.hpp"
 
-SpinLock::SpinLock(bool process_shared)
+SpinMutex::SpinMutex(bool process_shared)
 {
     int pshared = PTHREAD_PROCESS_PRIVATE;
     if (process_shared)
@@ -13,22 +13,22 @@ SpinLock::SpinLock(bool process_shared)
     pthread_spin_init(&_lock, pshared);
 }
 
-SpinLock::~SpinLock()
+SpinMutex::~SpinMutex()
 {
     pthread_spin_destroy(&_lock);
 }
 
-void SpinLock::lock()
+void SpinMutex::lock()
 {
     pthread_spin_lock(&_lock);
 }
 
-void SpinLock::unlock()
+void SpinMutex::unlock()
 {
     pthread_spin_unlock(&_lock);
 }
 
-bool SpinLock::try_lock()
+bool SpinMutex::try_lock()
 {
     return pthread_spin_trylock(&_lock) == 0 ? true : false;
 }

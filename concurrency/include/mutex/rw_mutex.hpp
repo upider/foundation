@@ -1,20 +1,20 @@
-#ifndef __RW_LOCK_HPP__
-#define __RW_LOCK_HPP__
+#ifndef __RW_MUTEX_HPP__
+#define __RW_MUTEX_HPP__
 
 #include <pthread.h>
 #include <unistd.h>
 
-class RWLock
+class RWMutex
 {
 private:
     pthread_rwlock_t _pthread_rwlock;
 
 public:
-    RWLock();
-    ~RWLock();
+    RWMutex();
+    ~RWMutex();
 
-    RWLock(const RWLock&) = delete;
-    RWLock& operator=(const RWLock&) = delete;
+    RWMutex(const RWMutex&) = delete;
+    RWMutex& operator=(const RWMutex&) = delete;
 public:
     int unlock();
     int readLock();
@@ -26,21 +26,21 @@ public:
 class ReadGuard
 {
 private:
-    RWLock &_rwLock;
+    RWMutex &_rwLock;
 
 public:
-    ReadGuard(RWLock &rwLock);
+    ReadGuard(RWMutex &rwLock);
     ~ReadGuard();
 };
 
 class WriteGuard
 {
 private:
-    RWLock &_rwLock;
+    RWMutex &_rwLock;
 
 public:
-    WriteGuard(RWLock &rwLock);
+    WriteGuard(RWMutex &rwLock);
     ~WriteGuard();
 };
 
-#endif //__RW_LOCK_HPP__
+#endif //__RW_MUTEX_HPP__
