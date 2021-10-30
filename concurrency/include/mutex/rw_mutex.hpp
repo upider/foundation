@@ -17,10 +17,10 @@ public:
     RWMutex& operator=(const RWMutex&) = delete;
 public:
     int unlock();
-    int readLock();
-    int writeLock();
-    int tryReadLock();
-    int tryWriteLock();
+    int read_lock();
+    int write_lock();
+    int try_read_lock();
+    int try_write_lock();
 };
 
 class ReadGuard

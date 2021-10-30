@@ -9,7 +9,7 @@ int main(int argc, char const *argv[])
     timer.schedule(
         []()
         {
-            std::cout << current_thread_name() << std::endl;
+            std::cout << Thread::current_thread_name() << std::endl;
         },
         5, 500, false);
 

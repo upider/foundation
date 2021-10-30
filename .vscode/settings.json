@@ -66,6 +66,7 @@
         "codecvt": "cpp",
         "cassert": "cpp",
         "cerrno": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "strstream": "cpp"
     },
 }

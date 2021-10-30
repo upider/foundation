@@ -15,29 +15,29 @@ int RWMutex::unlock()
     return pthread_rwlock_unlock(&_pthread_rwlock);
 }
 
-int RWMutex::readLock()
+int RWMutex::read_lock()
 {
     return pthread_rwlock_rdlock(&_pthread_rwlock);
 }
 
-int RWMutex::writeLock()
+int RWMutex::write_lock()
 {
     return pthread_rwlock_wrlock(&_pthread_rwlock);
 }
 
-int RWMutex::tryReadLock()
+int RWMutex::try_read_lock()
 {
     return pthread_rwlock_tryrdlock(&_pthread_rwlock);
 }
 
-int RWMutex::tryWriteLock()
+int RWMutex::try_write_lock()
 {
     return pthread_rwlock_trywrlock(&_pthread_rwlock);
 }
 
 ReadGuard::ReadGuard(RWMutex &rwLock) : _rwLock(rwLock)
 {
-    _rwLock.readLock();
+    _rwLock.read_lock();
 }
 
 ReadGuard::~ReadGuard()
@@ -47,7 +47,7 @@ ReadGuard::~ReadGuard()
 
 WriteGuard::WriteGuard(RWMutex &rwLock) : _rwLock(rwLock)
 {
-    _rwLock.writeLock();
+    _rwLock.write_lock();
 }
 
 WriteGuard::~WriteGuard()

@@ -3,17 +3,17 @@
 
 #include "thread/thread.hpp"
 
-std::thread::id current_thread_tid()
+std::thread::id Thread::current_thread_tid()
 {
     return std::this_thread::get_id();
 }
 
-pid_t current_thread_pid()
+pid_t Thread::current_thread_pid()
 {
     return syscall(__NR_gettid);
 }
 
-pthread_t tid_to_pid(std::thread::id tid)
+pthread_t Thread::tid_to_pid(std::thread::id tid)
 {
     static_assert(
         std::is_same<pthread_t, std::thread::native_handle_type>::value,
@@ -30,7 +30,7 @@ pthread_t tid_to_pid(std::thread::id tid)
     return id;
 }
 
-std::string thread_name(std::thread::id id)
+std::string Thread::thread_name(std::thread::id id)
 {
     std::array<char, 16> buf;
     if (id != std::thread::id() &&
@@ -44,12 +44,12 @@ std::string thread_name(std::thread::id id)
     }
 }
 
-std::string current_thread_name()
+std::string Thread::current_thread_name()
 {
     return thread_name(std::this_thread::get_id());
 }
 
-bool tid_thread_name(std::thread::id tid, const std::string &name)
+bool Thread::tid_thread_name(std::thread::id tid, const std::string &name)
 {
     auto str = name.substr(0, 15);
     char buf[16] = {};
@@ -58,7 +58,7 @@ bool tid_thread_name(std::thread::id tid, const std::string &name)
     return 0 == pthread_setname_np(id, buf);
 }
 
-bool pid_thread_name(pthread_t pid, const std::string &name)
+bool Thread::pid_thread_name(pthread_t pid, const std::string &name)
 {
     static_assert(
         std::is_same<pthread_t, std::thread::native_handle_type>::value,
@@ -75,7 +75,7 @@ bool pid_thread_name(pthread_t pid, const std::string &name)
     return tid_thread_name(id, name);
 }
 
-bool current_thread_name(const std::string &name)
+bool Thread::current_thread_name(const std::string &name)
 {
     return tid_thread_name(std::this_thread::get_id(), name);
 }
