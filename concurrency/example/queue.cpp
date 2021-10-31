@@ -5,6 +5,8 @@
 
 #include "stack_trace/stack_trace.hpp"
 #include "concurrent_queue/array_blocking_queue.hpp"
+#include "concurrent_queue/linked_blocking_queue.hpp"
+#include "concurrent_queue/priority_blocking_queue.hpp"
 
 void handler(int)
 {
@@ -20,13 +22,15 @@ public:
 };
 
 std::size_t N = 10;
-ArrayBlockingQueue<int, 10> abq;
+// ArrayBlockingQueue<int, 10> queue;
+PriorityBlockingQueue<int> queue0;
+LinkedBlockingQueue<int> queue(N);
 
 void task_producer()
 {
     for (size_t i = 0; i < N; i++)
     {
-        abq.push(i);
+        queue.push(i);
         std::cout << std::this_thread::get_id() << " producer: " << i << std::endl;
     }
 }
@@ -35,7 +39,7 @@ void task_consumer()
 {
     for (size_t i = 0; i < N * 2; i++)
     {
-        auto x = abq.pop();
+        auto x = queue.pop();
         std::cout << std::this_thread::get_id() << " consumer: " << x << std::endl;
     }
 }

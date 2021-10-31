@@ -22,6 +22,10 @@ private:
     std::size_t _count = 0;
 
 public:
+    ArrayBlockingQueue();
+    ~ArrayBlockingQueue();
+    ArrayBlockingQueue(const ArrayBlockingQueue &) = delete;
+    ArrayBlockingQueue &operator=(const ArrayBlockingQueue &) = delete;
     /**
      * @brief 阻塞地将元素的放入队列
      */
@@ -37,7 +41,7 @@ public:
      * @param T 入队元素
      * @return bool 入队是否成功
      */
-    bool wait_push(T &&, std::size_t seconds, std::size_t nano_seconds);
+    virtual bool wait_push(T &&, std::size_t seconds, std::size_t nano_seconds = 0);
     /**
      * @brief 将元素弹出队列
      */
@@ -53,7 +57,7 @@ public:
      *
      * @param value 弹出元素赋值对象
      */
-    virtual bool wait_pop(T &value, std::size_t seconds, std::size_t nano_seconds);
+    virtual bool wait_pop(T &value, std::size_t seconds, std::size_t nano_seconds = 0);
     /**
      * @brief 返回队列大小
      */
@@ -68,10 +72,29 @@ public:
     virtual bool empty();
 
 private:
+    /**
+     * @brief 队列已满
+     */
     bool full();
+    /**
+     * @brief FIFO插入元素
+     */
     void insert(T &&ele);
+    /**
+     * @brief FIFO删除元素
+     */
     T &&remove();
 };
+
+template <typename T, std::size_t N>
+ArrayBlockingQueue<T, N>::ArrayBlockingQueue()
+{
+}
+
+template <typename T, std::size_t N>
+ArrayBlockingQueue<T, N>::~ArrayBlockingQueue()
+{
+}
 
 template <typename T, std::size_t N>
 void ArrayBlockingQueue<T, N>::push(T &&ele)
@@ -89,15 +112,15 @@ void ArrayBlockingQueue<T, N>::push(T &&ele)
 template <typename T, std::size_t N>
 bool ArrayBlockingQueue<T, N>::try_push(T &&ele)
 {
-    bool res = _mutex.try_lock();
-    if (res && !full())
+    if (_mutex.try_lock() && !full())
     {
         this->insert(std::forward<T>(ele));
         _mutex.unlock();
         _not_empty.notify_one();
+        return true;
     }
 
-    return res;
+    return false;
 }
 
 template <typename T, std::size_t N>
@@ -135,17 +158,15 @@ T &&ArrayBlockingQueue<T, N>::pop()
 template <typename T, std::size_t N>
 bool ArrayBlockingQueue<T, N>::try_pop(T &ele)
 {
-    bool res;
+    if (_mutex.try_lock() && !empty())
     {
-        res = _mutex.try_lock();
-        if (res && !empty())
-        {
-            ele = remove();
-            _not_full.notify_one();
-        }
+        ele = remove();
+        _mutex.unlock();
+        _not_full.notify_one();
+        return true;
     }
 
-    return res;
+    return false;
 }
 
 template <typename T, std::size_t N>
@@ -160,7 +181,7 @@ bool ArrayBlockingQueue<T, N>::wait_pop(T &ele, std::size_t seconds, std::size_t
         if (res)
         {
             ele = remove();
-            _not_empty.notify_one();
+            _not_full.notify_one();
         }
     }
 
@@ -182,7 +203,7 @@ std::size_t ArrayBlockingQueue<T, N>::cap()
 template <typename T, std::size_t N>
 bool ArrayBlockingQueue<T, N>::empty()
 {
-    return this->size() == this->cap();
+    return _count == 0;
 }
 
 template <typename T, std::size_t N>
