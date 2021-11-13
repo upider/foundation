@@ -5,8 +5,6 @@
 #include <string>
 #include <functional>
 
-class TimerTask;
-
 class Timer
 {
 public:
@@ -38,16 +36,7 @@ public:
      * @param oneshot 是否只调度一次
      * @return void
      */
-    virtual void schedule(std::unique_ptr<TimerTask> task, int seconds, int micorSeconds, bool oneshot) = 0;
-            /**
-     * @brief 添加任务
-     * @param task 任务
-     * @param seconds 秒
-     * @param micorSeconds 微秒
-     * @param oneshot 是否只调度一次
-     * @return void
-     */
-    virtual void schedule(std::function<void()> task, int seconds, int micorSeconds, bool oneshot = true) = 0;
+    virtual void schedule(std::function<void()> &&task, int seconds, int micorSeconds, bool oneshot = true) = 0;
 };
 
 #endif // __TIMER_HPP__

@@ -1,7 +1,7 @@
 #ifndef __HEAP_TIMER_HPP__
 #define __HEAP_TIMER_HPP__
 
-#include "timer/timer.hpp"
+#include "concurrency/timer/timer.hpp"
 
 //堆计时器, 内部任务队列使用堆, 默认使用单线程调度
 //默认情况下不能处理时间过长的任务, 否则会阻塞后面的任务
@@ -38,7 +38,7 @@ public:
      * @param oneshot 是否只调度一次
      * @return void
      */
-    virtual void schedule(std::unique_ptr<TimerTask> task, int seconds, int micorSeconds, bool oneshot);
+    virtual void schedule(std::function<void()> task, int seconds, int micorSeconds, bool oneshot = true);
 };
 
 #endif // __HEAP_TIMER_HPP__

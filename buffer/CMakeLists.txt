@@ -6,6 +6,7 @@ add_executable(byte example/byte.cpp ${SRCS})
 target_link_libraries(byte buffer concurrency)
 
 add_executable(justlock example/just_lock.cpp ${SRCS})
+target_link_libraries(justlock buffer concurrency stacktrace)
 
 add_executable(pbuffer example/pbuffer.cpp ${SRCS})
 target_link_libraries(pbuffer buffer concurrency stacktrace)

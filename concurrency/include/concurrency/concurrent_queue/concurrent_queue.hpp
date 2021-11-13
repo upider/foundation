@@ -1,6 +1,8 @@
 #ifndef __CONCURRENT_QUEUE_HPP__
 #define __CONCURRENT_QUEUE_HPP__
 
+#include <cinttypes>
+
 //FIFO队列
 template <typename T>
 class ConcurrentQueue
@@ -15,11 +17,21 @@ public:
      */
     virtual void push(T &&) = 0;
     /**
+     * @brief 阻塞地将元素的放入队列
+     */
+    virtual void push(const T &) = 0;
+    /**
      * @brief 将元素的放入队列
      * @param T 入队元素
      * @return bool 入队是否成功
      */
     virtual bool try_push(T &&) = 0;
+    /**
+     * @brief 将元素的放入队列
+     * @param T 入队元素
+     * @return bool 入队是否成功
+     */
+    virtual bool try_push(const T &) = 0;
     /**
      * @brief 将元素的放入队列, 立即返回
      * @param T 入队元素
@@ -27,9 +39,15 @@ public:
      */
     virtual bool wait_push(T &&, std::size_t seconds, std::size_t nano_seconds) = 0;
     /**
+     * @brief 将元素的放入队列, 立即返回
+     * @param T 入队元素
+     * @return bool 入队是否成功
+     */
+    virtual bool wait_push(const T &, std::size_t seconds, std::size_t nano_seconds) = 0;
+    /**
      * @brief 将元素弹出队列
      */
-    virtual T &&pop() = 0;
+    virtual T pop() = 0;
     /**
      * @brief try_pop 弹出队列元素, 立即返回
      *

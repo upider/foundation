@@ -2,10 +2,12 @@
 
 #include <iostream>
 #include <thread>
+#include <chrono>
 #include <vector>
 #include <mutex>
 
 #include "byte/byte.hpp"
+#include "concurrency/timer/time_ticker.hpp"
 
 class Helper
 {
@@ -23,23 +25,24 @@ public:
 
 int main(int argc, char const *argv[])
 {
-    size_t numThreads = 3;
+    TimeTicker ticker(0, 1000);
+
+    size_t numThreads = 256;
     // auto blocks = {128};
     auto blocks = {128, 1024, 2048, 4096};
     auto threads = std::vector<std::thread *>(numThreads);
 
     std::mutex mutex;
 
-    auto task = [&mutex, &blocks]()
+    auto task = [&mutex, &blocks, &ticker]()
     {
-        for (size_t i = 0; i < 1000 * 1000 * 100; i++)
+        for (size_t i = 0; i < 1000; i++)
         {
-            for (auto s : blocks)
-            {
-                mutex.lock();
-                // Helper h(s);
-                mutex.unlock();
-            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            mutex.lock();
+            // Helper h(s);
+            // ticker.tick();
+            mutex.unlock();
         }
     };
 
@@ -50,7 +53,7 @@ int main(int argc, char const *argv[])
         threads[i] = new std::thread(task);
     }
 
-    task();
+    // task();
 
     for (size_t i = 0; i < numThreads; i++)
     {

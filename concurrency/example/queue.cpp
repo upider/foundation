@@ -4,9 +4,9 @@
 #include <thread>
 
 #include "stack_trace/stack_trace.hpp"
-#include "concurrent_queue/array_blocking_queue.hpp"
-#include "concurrent_queue/linked_blocking_queue.hpp"
-#include "concurrent_queue/priority_blocking_queue.hpp"
+#include "concurrency/concurrent_queue/array_blocking_queue.hpp"
+#include "concurrency/concurrent_queue/linked_blocking_queue.hpp"
+#include "concurrency/concurrent_queue/priority_blocking_queue.hpp"
 
 void handler(int)
 {

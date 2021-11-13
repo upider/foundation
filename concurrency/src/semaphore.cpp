@@ -1,4 +1,4 @@
-#include "semaphore.hpp"
+#include "concurrency/semaphore.hpp"
 
 Semaphore::Semaphore(int pshared, unsigned int value)
 {

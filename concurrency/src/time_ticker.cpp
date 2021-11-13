@@ -5,10 +5,9 @@
 
 #include <stdexcept>
 
-#include "timer/time_ticker.hpp"
+#include "concurrency/timer/time_ticker.hpp"
 
-TimeTicker::TimeTicker(int seconds, int microSeconds)
-    : _timeout(new Timeout{seconds, microSeconds}), _readfds(new FDSet{})
+TimeTicker::TimeTicker() : _timeout(), _readfds({})
 {
     int pip_ret = pipe(_pipefds);
     if (pip_ret)
@@ -17,27 +16,31 @@ TimeTicker::TimeTicker(int seconds, int microSeconds)
     }
 }
 
-TimeTicker::~TimeTicker()
+TimeTicker::TimeTicker(int seconds, int microSeconds)
+    : _timeout({seconds, microSeconds}), _readfds({})
 {
-    if (_timeout != nullptr)
+    int pip_ret = pipe(_pipefds);
+    if (pip_ret)
     {
-        delete _timeout;
+        throw std::runtime_error("TimeTicker create pipe error.");
     }
 }
 
+TimeTicker::~TimeTicker() {}
+
 bool TimeTicker::tick()
 {
-    FD_ZERO(_readfds);
-    FD_SET(_pipefds[0], _readfds);
-    Timeout timeout = *_timeout;
-    int ret = select(_pipefds[0] + 1, _readfds, NULL, NULL, &timeout);
+    FD_ZERO(&_readfds);
+    FD_SET(_pipefds[0], &_readfds);
+    Timeout timeout = _timeout;
+    int ret = select(_pipefds[0] + 1, &_readfds, NULL, NULL, &timeout);
     if (ret == -1)
     {
         throw std::runtime_error("TimeTicker select error.");
     }
 
     //如果FD_ISSET返回值为非0，说明文件描述符就绪
-    return (FD_ISSET(_pipefds[0], _readfds)) ? true : false;
+    return (FD_ISSET(_pipefds[0], &_readfds)) ? true : false;
 }
 
 void TimeTicker::cancel()

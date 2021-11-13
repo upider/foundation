@@ -1,6 +1,6 @@
 #include <pthread.h>
 
-#include "mutex/spin_mutex.hpp"
+#include "concurrency/mutex/spin_mutex.hpp"
 
 SpinMutex::SpinMutex(bool process_shared)
 {

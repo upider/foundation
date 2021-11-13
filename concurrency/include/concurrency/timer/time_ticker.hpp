@@ -9,11 +9,12 @@ private:
     using FDSet = fd_set;
 
 private:
-    Timeout *_timeout;
+    Timeout _timeout;
     int _pipefds[2];
-    FDSet *_readfds;
+    FDSet _readfds;
 
 public:
+    TimeTicker();
     TimeTicker(int seconds, int microSeconds = 0);
     ~TimeTicker();
 

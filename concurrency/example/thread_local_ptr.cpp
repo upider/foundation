@@ -3,8 +3,8 @@
 #include <thread>
 #include <iostream>
 
-#include "thread/thread.hpp"
-#include "thread/thread_local_ptr.hpp"
+#include "concurrency/thread/thread.hpp"
+#include "concurrency/thread/thread_local_ptr.hpp"
 
 class Helper
 {
@@ -20,12 +20,12 @@ int main(int argc, char const *argv[])
         []()
         {
             auto p = threadLocalHelperPtr.get_ptr();
-            std::cout << "thread id = " << Thread::current_thread_pid() << ", " << &p << std::endl;
+            std::cout << "thread id = " << current_thread_pid() << ", " << &p << std::endl;
         });
 
     sleep(1);
     auto p = threadLocalHelperPtr.get_ptr();
-    std::cout << "thread id = " << Thread::current_thread_pid() << ", " << &p << std::endl;
+    std::cout << "thread id = " << current_thread_pid() << ", " << &p << std::endl;
 
     th1.join();
 

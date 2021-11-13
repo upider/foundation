@@ -1,4 +1,4 @@
-#include "timer/heap_timer.hpp"
+#include "concurrency/timer/heap_timer.hpp"
 
 HeapTimer::HeapTimer(std::size_t threads)
 {
@@ -21,4 +21,4 @@ int HeapTimer::purge()
     return 0;
 }
 
-void HeapTimer::schedule(std::unique_ptr<TimerTask> task, int seconds, int micorSeconds, bool oneshot) {}
+void HeapTimer::schedule(std::function<void()> task, int seconds, int micorSeconds, bool oneshot) {}

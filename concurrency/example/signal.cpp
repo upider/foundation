@@ -1,7 +1,7 @@
 #include <iostream>
 #include <atomic>
 
-#include "signal.hpp"
+#include "concurrency/signal.hpp"
 
 std::atomic_bool run{true};
 

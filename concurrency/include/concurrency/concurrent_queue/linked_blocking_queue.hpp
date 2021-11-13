@@ -7,7 +7,7 @@
 #include <mutex>
 #include <limits>
 
-#include "concurrent_queue/concurrent_queue.hpp"
+#include "concurrency/concurrent_queue/concurrent_queue.hpp"
 
 //ArrayBlockingQueue 底层由链表实现的队列, 默认容量std::numeric_limits<std::size_t>::max()
 template <typename T>
@@ -18,13 +18,14 @@ private:
     {
     public:
         Node(T &&ele) : ele(std::forward<T>(ele)) {}
+        Node(const T &ele) : ele(ele) {}
         Node() {}
         T ele;
         Node *next = nullptr;
     };
 
 private:
-    std::size_t _cap;
+    const std::size_t _cap;
     std::mutex _take_mutex;
     std::mutex _put_mutex;
     std::condition_variable _not_full;
@@ -37,7 +38,7 @@ public:
     /**
      * @brief 构造函数
      * @param cap 最大容量
-     */ 
+     */
     LinkedBlockingQueue(std::size_t cap = std::numeric_limits<std::size_t>::max());
     ~LinkedBlockingQueue();
     LinkedBlockingQueue(const LinkedBlockingQueue &) = delete;
@@ -47,11 +48,21 @@ public:
      */
     virtual void push(T &&);
     /**
+     * @brief 阻塞地将元素的放入队列
+     */
+    virtual void push(const T &);
+    /**
      * @brief 将元素的放入队列, 立即返回
      * @param T 入队元素
      * @return bool 入队是否成功
      */
     virtual bool try_push(T &&);
+    /**
+     * @brief 将元素的放入队列, 立即返回
+     * @param T 入队元素
+     * @return bool 入队是否成功
+     */
+    virtual bool try_push(const T &);
     /**
      * @brief 将元素的放入队列
      * @param T 入队元素
@@ -59,9 +70,15 @@ public:
      */
     virtual bool wait_push(T &&, std::size_t seconds, std::size_t nano_seconds = 0);
     /**
+     * @brief 将元素的放入队列
+     * @param T 入队元素
+     * @return bool 入队是否成功
+     */
+    virtual bool wait_push(const T &, std::size_t seconds, std::size_t nano_seconds = 0);
+    /**
      * @brief 将元素弹出队列
      */
-    virtual T &&pop();
+    virtual T pop();
     /**
      * @brief try_pop 弹出队列元素, 立即返回
      *
@@ -97,9 +114,13 @@ private:
      */
     void insert(T &&ele);
     /**
+     * @brief FIFO插入元素
+     */
+    void insert(const T &ele);
+    /**
      * @brief FIFO删除元素
      */
-    T &&remove();
+    T remove();
 };
 
 template <typename T>
@@ -135,11 +156,38 @@ void LinkedBlockingQueue<T>::push(T &&ele)
 }
 
 template <typename T>
+void LinkedBlockingQueue<T>::push(const T &ele)
+{
+    {
+        std::unique_lock<std::mutex> lock(_put_mutex);
+        _not_full.wait(lock, [this]()
+                       { return !full(); });
+        this->insert(ele);
+    }
+
+    _not_empty.notify_one();
+}
+
+template <typename T>
 bool LinkedBlockingQueue<T>::try_push(T &&ele)
 {
     if (_put_mutex.try_lock() && !full())
     {
         this->insert(std::forward<T>(ele));
+        _put_mutex.unlock();
+        _not_empty.notify_one();
+        return true;
+    }
+
+    return false;
+}
+
+template <typename T>
+bool LinkedBlockingQueue<T>::try_push(const T &ele)
+{
+    if (_put_mutex.try_lock() && !full())
+    {
+        this->insert(ele);
         _put_mutex.unlock();
         _not_empty.notify_one();
         return true;
@@ -168,7 +216,26 @@ bool LinkedBlockingQueue<T>::wait_push(T &&ele, std::size_t seconds, std::size_t
 }
 
 template <typename T>
-T &&LinkedBlockingQueue<T>::pop()
+bool LinkedBlockingQueue<T>::wait_push(const T &ele, std::size_t seconds, std::size_t nano_seconds)
+{
+    bool res;
+    {
+        std::unique_lock<std::mutex> lock(_put_mutex);
+        std::size_t nonas = seconds * 1e9 + nano_seconds;
+        res = _not_full.wait_for(lock, std::chrono::nanoseconds(nonas), [this]()
+                                 { return !full(); });
+        if (res)
+        {
+            this->insert(ele);
+            _not_empty.notify_one();
+        }
+    }
+
+    return res;
+}
+
+template <typename T>
+T LinkedBlockingQueue<T>::pop()
 {
     std::unique_lock<std::mutex> lock(_take_mutex);
     _not_empty.wait(lock, [this]()
@@ -247,7 +314,16 @@ void LinkedBlockingQueue<T>::insert(T &&ele)
 }
 
 template <typename T>
-T &&LinkedBlockingQueue<T>::remove()
+void LinkedBlockingQueue<T>::insert(const T &ele)
+{
+    Node *node = new Node(ele);
+    _tail->next = node;
+    _tail = _tail->next;
+    _count++;
+}
+
+template <typename T>
+T LinkedBlockingQueue<T>::remove()
 {
     //这里不能直接将_head->next从链表中取出, 否则_head->next == _tail时, 会将_tail删除(operator delete)
     //应该删除_head, 并将_head更新为_head->next
@@ -259,6 +335,6 @@ T &&LinkedBlockingQueue<T>::remove()
     auto ele = std::move(_head->ele);
     delete h;
     _count--;
-    return std::forward<T>(ele);
+    return ele;
 }
 #endif // __LINKED_BLOCKING_QUEUE_HPP__
