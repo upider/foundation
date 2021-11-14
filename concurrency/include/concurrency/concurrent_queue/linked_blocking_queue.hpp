@@ -185,8 +185,13 @@ bool LinkedBlockingQueue<T>::try_push(T &&ele)
 template <typename T>
 bool LinkedBlockingQueue<T>::try_push(const T &ele)
 {
-    if (_put_mutex.try_lock() && !full())
+    if (_put_mutex.try_lock())
     {
+        if (full())
+        {
+            _put_mutex.unlock();
+            return false;
+        }
         this->insert(ele);
         _put_mutex.unlock();
         _not_empty.notify_one();
@@ -244,14 +249,19 @@ T LinkedBlockingQueue<T>::pop()
     auto ele = remove();
     _not_full.notify_one();
 
-    return std::forward<T>(ele);
+    return ele;
 }
 
 template <typename T>
 bool LinkedBlockingQueue<T>::try_pop(T &ele)
 {
-    if (_take_mutex.try_lock() && !empty())
+    if (_take_mutex.try_lock())
     {
+        if (empty())
+        {
+            _take_mutex.unlock();
+            return false;
+        }
         ele = remove();
         _take_mutex.unlock();
         _not_full.notify_one();

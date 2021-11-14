@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
     executor->execute([]()
                       { std::cout << current_thread_name() << std::endl; });
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(3));
     executor->shutdown();
     delete executor;
     return 0;

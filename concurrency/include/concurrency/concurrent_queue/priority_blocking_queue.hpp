@@ -6,19 +6,20 @@
 #include <condition_variable>
 #include <mutex>
 
+#include "concurrency/concurrent_queue/concurrent_queue.hpp"
+
 //PriorityBlockingQueue 多线程优先级队列, 无界
-template <typename T, typename Container = std::vector<T>, typename Compare = std::less<T>>
+template <typename T, typename Compare = std::less<T>>
 class PriorityBlockingQueue : public ConcurrentQueue<T>
 {
 private:
-    std::priority_queue<T, Container, Compare> _queue;
-    std::timed_mutex _mutex;
-    std::condition_variable _not_full;
+    std::priority_queue<T, std::vector<T>, Compare> _queue{};
+    std::mutex _mutex;
     std::condition_variable _not_empty;
 
 public:
     PriorityBlockingQueue();
-    ~PriorityBlockingQueue();
+    virtual ~PriorityBlockingQueue();
     PriorityBlockingQueue(const PriorityBlockingQueue &) = delete;
     PriorityBlockingQueue &operator=(const PriorityBlockingQueue &) = delete;
 
@@ -98,38 +99,32 @@ private:
     T remove();
 };
 
-template <typename T, typename Container, typename Compare>
-PriorityBlockingQueue<T, Container, Compare>::PriorityBlockingQueue()
-{
-}
+template <typename T, typename Compare>
+PriorityBlockingQueue<T, Compare>::PriorityBlockingQueue() {}
 
-template <typename T, typename Container, typename Compare>
-PriorityBlockingQueue<T, Container, Compare>::~PriorityBlockingQueue()
-{
-}
+template <typename T, typename Compare>
+PriorityBlockingQueue<T, Compare>::~PriorityBlockingQueue() {}
 
-template <typename T, typename Container, typename Compare>
-void PriorityBlockingQueue<T, Container, Compare>::push(T &&ele)
+template <typename T, typename Compare>
+void PriorityBlockingQueue<T, Compare>::push(T &&ele)
 {
     _mutex.lock();
     this->insert(std::forward<T>(ele));
     _mutex.unlock();
-
     _not_empty.notify_one();
 }
 
-template <typename T, typename Container, typename Compare>
-void PriorityBlockingQueue<T, Container, Compare>::push(const T &ele)
+template <typename T, typename Compare>
+void PriorityBlockingQueue<T, Compare>::push(const T &ele)
 {
     _mutex.lock();
     this->insert(ele);
     _mutex.unlock();
-
     _not_empty.notify_one();
 }
 
-template <typename T, typename Container, typename Compare>
-bool PriorityBlockingQueue<T, Container, Compare>::try_push(T &&ele)
+template <typename T, typename Compare>
+bool PriorityBlockingQueue<T, Compare>::try_push(T &&ele)
 {
     if (_mutex.try_lock())
     {
@@ -141,8 +136,8 @@ bool PriorityBlockingQueue<T, Container, Compare>::try_push(T &&ele)
     return false;
 }
 
-template <typename T, typename Container, typename Compare>
-bool PriorityBlockingQueue<T, Container, Compare>::try_push(const T &ele)
+template <typename T, typename Compare>
+bool PriorityBlockingQueue<T, Compare>::try_push(const T &ele)
 {
     if (_mutex.try_lock())
     {
@@ -154,11 +149,13 @@ bool PriorityBlockingQueue<T, Container, Compare>::try_push(const T &ele)
     return false;
 }
 
-template <typename T, typename Container, typename Compare>
-bool PriorityBlockingQueue<T, Container, Compare>::wait_push(T &&ele, std::size_t seconds, std::size_t nano_seconds)
+template <typename T, typename Compare>
+bool PriorityBlockingQueue<T, Compare>::wait_push(T &&ele, std::size_t seconds, std::size_t nano_seconds)
 {
+    std::unique_lock<std::mutex> lock(_mutex);
     std::size_t nonas = seconds * 1e9 + nano_seconds;
-    if (_mutex.try_lock_for(std::chrono::nanoseconds(nonas)))
+    auto res = _not_empty.wait_for(lock, std::chrono::nanoseconds(nonas));
+    if (res == std::cv_status::no_timeout)
     {
         this->insert(std::forward<T>(ele));
         _mutex.unlock();
@@ -168,11 +165,13 @@ bool PriorityBlockingQueue<T, Container, Compare>::wait_push(T &&ele, std::size_
     return false;
 }
 
-template <typename T, typename Container, typename Compare>
-bool PriorityBlockingQueue<T, Container, Compare>::wait_push(const T &ele, std::size_t seconds, std::size_t nano_seconds)
+template <typename T, typename Compare>
+bool PriorityBlockingQueue<T, Compare>::wait_push(const T &ele, std::size_t seconds, std::size_t nano_seconds)
 {
+    std::unique_lock<std::mutex> lock(_mutex);
     std::size_t nonas = seconds * 1e9 + nano_seconds;
-    if (_mutex.try_lock_for(std::chrono::nanoseconds(nonas)))
+    auto res = _not_empty.wait_for(lock, std::chrono::nanoseconds(nonas));
+    if (res == std::cv_status::no_timeout)
     {
         this->insert(ele);
         _mutex.unlock();
@@ -182,21 +181,27 @@ bool PriorityBlockingQueue<T, Container, Compare>::wait_push(const T &ele, std::
     return false;
 }
 
-template <typename T, typename Container, typename Compare>
-T PriorityBlockingQueue<T, Container, Compare>::pop()
+template <typename T, typename Compare>
+T PriorityBlockingQueue<T, Compare>::pop()
 {
-    _mutex.lock();
+    std::unique_lock<std::mutex> lock(_mutex);
+    _not_empty.wait(lock, [this]()
+                    { return !empty(); });
     auto ele = this->remove();
-    _mutex.unlock();
 
     return ele;
 }
 
-template <typename T, typename Container, typename Compare>
-bool PriorityBlockingQueue<T, Container, Compare>::try_pop(T &ele)
+template <typename T, typename Compare>
+bool PriorityBlockingQueue<T, Compare>::try_pop(T &ele)
 {
     if (_mutex.try_lock())
     {
+        if (empty())
+        {
+            _mutex.unlock();
+            return false;
+        }
         ele = this->remove();
         _mutex.unlock();
         return true;
@@ -204,55 +209,59 @@ bool PriorityBlockingQueue<T, Container, Compare>::try_pop(T &ele)
     return false;
 }
 
-template <typename T, typename Container, typename Compare>
-bool PriorityBlockingQueue<T, Container, Compare>::wait_pop(T &ele, std::size_t seconds, std::size_t nano_seconds)
+template <typename T, typename Compare>
+bool PriorityBlockingQueue<T, Compare>::wait_pop(T &ele, std::size_t seconds, std::size_t nano_seconds)
 {
+    std::unique_lock<std::mutex> lock(_mutex);
     std::size_t nonas = seconds * 1e9 + nano_seconds;
-    if (_mutex.try_lock_for(std::chrono::nanoseconds(nonas)))
+    if (_not_empty.wait_for(lock, std::chrono::nanoseconds(nonas), [this]()
+                            { return !empty(); }))
     {
-        ele = this->remove();
-        _mutex.unlock();
+        ele = remove();
         return true;
     }
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
-template <typename T, typename Container, typename Compare>
-std::size_t PriorityBlockingQueue<T, Container, Compare>::size()
+template <typename T, typename Compare>
+std::size_t PriorityBlockingQueue<T, Compare>::size()
 {
     return _queue.size();
 }
 
-template <typename T, typename Container, typename Compare>
-std::size_t PriorityBlockingQueue<T, Container, Compare>::cap()
+template <typename T, typename Compare>
+std::size_t PriorityBlockingQueue<T, Compare>::cap()
 {
     return std::numeric_limits<std::size_t>::max();
 }
 
-template <typename T, typename Container, typename Compare>
-bool PriorityBlockingQueue<T, Container, Compare>::empty()
+template <typename T, typename Compare>
+bool PriorityBlockingQueue<T, Compare>::empty()
 {
     return _queue.empty();
 }
 
-template <typename T, typename Container, typename Compare>
-void PriorityBlockingQueue<T, Container, Compare>::insert(T &&ele)
+template <typename T, typename Compare>
+void PriorityBlockingQueue<T, Compare>::insert(T &&ele)
 {
     _queue.push(std::forward<T>(ele));
 }
 
-template <typename T, typename Container, typename Compare>
-void PriorityBlockingQueue<T, Container, Compare>::insert(const T &ele)
+template <typename T, typename Compare>
+void PriorityBlockingQueue<T, Compare>::insert(const T &ele)
 {
     _queue.push(ele);
 }
 
-template <typename T, typename Container, typename Compare>
-T PriorityBlockingQueue<T, Container, Compare>::remove()
+template <typename T, typename Compare>
+T PriorityBlockingQueue<T, Compare>::remove()
 {
     auto ele = _queue.top();
     _queue.pop();
-    return std::forward<T>(ele);
+    return ele;
 }
 
 #endif // __PRIORITY_BLOCKING_QUEUE_HPP__

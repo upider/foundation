@@ -159,8 +159,13 @@ bool ArrayBlockingQueue<T, N>::try_push(T &&ele)
 template <typename T, std::size_t N>
 bool ArrayBlockingQueue<T, N>::try_push(const T &ele)
 {
-    if (_mutex.try_lock() && !full())
+    if (_mutex.try_lock())
     {
+        if (full())
+        {
+            _mutex.unlock();
+            return false;
+        }
         this->insert(ele);
         _mutex.unlock();
         _not_empty.notify_one();
@@ -224,8 +229,13 @@ T ArrayBlockingQueue<T, N>::pop()
 template <typename T, std::size_t N>
 bool ArrayBlockingQueue<T, N>::try_pop(T &ele)
 {
-    if (_mutex.try_lock() && !empty())
+    if (_mutex.try_lock())
     {
+        if (empty())
+        {
+            _mutex.unlock();
+            return false;
+        }
         ele = remove();
         _mutex.unlock();
         _not_full.notify_one();

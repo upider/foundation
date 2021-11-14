@@ -1,4 +1,5 @@
 #include <sys/signal.h>
+#include <unistd.h>
 #include <memory>
 #include <iostream>
 #include <thread>
@@ -23,8 +24,8 @@ public:
 
 std::size_t N = 10;
 // ArrayBlockingQueue<int, 10> queue;
-PriorityBlockingQueue<int> queue0;
-LinkedBlockingQueue<int> queue(N);
+PriorityBlockingQueue<int> queue;
+// LinkedBlockingQueue<int> queue(N);
 
 void task_producer()
 {
@@ -47,6 +48,7 @@ void task_consumer()
 int main(int argc, char const *argv[])
 {
     signal(SIGSEGV, handler);
+    signal(SIGABRT, handler);
 
     std::thread pro(task_producer);
     std::thread con(task_consumer);
@@ -55,6 +57,8 @@ int main(int argc, char const *argv[])
 
     pro.join();
     con.join();
+
+    // sleep(5);
 
     return 0;
 }
