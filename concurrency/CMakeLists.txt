@@ -2,6 +2,8 @@ aux_source_directory(src SRCS)
 
 add_library(concurrency SHARED ${SRCS})
 
+add_executable(delay_queue example/delay_queue.cpp ${SRCS})
+
 add_executable(queue example/queue.cpp ${SRCS})
 target_link_libraries(queue stacktrace)
 
