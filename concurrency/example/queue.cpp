@@ -23,8 +23,8 @@ public:
 };
 
 std::size_t N = 10;
-// ArrayBlockingQueue<int, 10> queue;
-PriorityBlockingQueue<int> queue;
+ArrayBlockingQueue<int, 10> queue;
+// PriorityBlockingQueue<int> queue;
 // LinkedBlockingQueue<int> queue(N);
 
 void task_producer()
@@ -32,6 +32,7 @@ void task_producer()
     for (size_t i = 0; i < N; i++)
     {
         queue.push(i);
+        queue.wait_push(i, std::chrono::milliseconds(1));
         std::cout << std::this_thread::get_id() << " producer: " << i << std::endl;
     }
 }

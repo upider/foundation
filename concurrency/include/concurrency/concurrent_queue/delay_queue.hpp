@@ -27,7 +27,7 @@ public:
     };
 
 private:
-    std::recursive_mutex _mutex;
+    std::timed_mutex _mutex;
     std::condition_variable_any _cv;
     std::priority_queue<time_pair, std::vector<time_pair>, Compare> _queue;
 
@@ -63,6 +63,12 @@ public:
      */
     bool try_push(const T &, time_point tp);
 
+    template <class Rep, class Period>
+    bool wait_push(const T &ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration);
+
+    template <class Rep, class Period>
+    bool wait_push(T &&ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration);
+
     /**
      * @brief 将元素弹出队列
      */
@@ -73,6 +79,9 @@ public:
      * @param value 弹出元素赋值对象
      */
     bool try_pop(T &value);
+
+    template <class Rep, class Period>
+    bool wait_pop(T &&ele, const std::chrono::duration<Rep, Period> &wait_duration);
     /**
      * @brief 返回队列大小
      */
@@ -139,6 +148,32 @@ bool DelayQueue<T, CLOCK>::try_push(const T &ele, time_point tp)
         return true;
     }
     return false;
+}
+
+template <typename T, typename CLOCK>
+template <class Rep, class Period>
+bool DelayQueue<T, CLOCK>::wait_push(const T &ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration)
+{
+    bool m = _mutex.try_lock_for(wait_duration);
+    if (m)
+    {
+        _queue.emplace(ele, tp);
+        _mutex.unlock();
+    }
+    return m;
+}
+
+template <typename T, typename CLOCK>
+template <class Rep, class Period>
+bool DelayQueue<T, CLOCK>::wait_push(T &&ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration)
+{
+    bool m = _mutex.try_lock_for(wait_duration);
+    if (m)
+    {
+        _queue.emplace(std::forward<T>(ele), tp);
+        _mutex.unlock();
+    }
+    return m;
 }
 
 template <typename T, typename CLOCK>
@@ -209,6 +244,46 @@ bool DelayQueue<T, CLOCK>::try_pop(T &value)
             else
             {
                 return try_pop(value);
+            }
+        }
+        else
+        {
+            _mutex.unlock();
+            return false;
+        }
+    }
+    return false;
+}
+
+template <typename T, typename CLOCK>
+template <class Rep, class Period>
+bool DelayQueue<T, CLOCK>::wait_pop(T &&ele, const std::chrono::duration<Rep, Period> &wait_duration)
+{
+    if (_mutex.try_lock_for(wait_duration))
+    {
+        if (!empty())
+        {
+            auto p = _queue.top().second;
+            _mutex.unlock();
+            NullMutex lock;
+            if (_cv.wait_until(lock, p) == std::cv_status::timeout)
+            {
+                if (_mutex.try_lock())
+                {
+                    if (p == _queue.top().second)
+                    {
+                        ele = _queue.top().first;
+                        _queue.pop();
+                        _mutex.unlock();
+                        return true;
+                    }
+                    _mutex.unlock();
+                }
+                return false;
+            }
+            else
+            {
+                return try_pop(ele);
             }
         }
         else
