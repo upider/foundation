@@ -22,17 +22,17 @@ public:
     Date(bool local);
     ~Date();
 
-    int year();
-    int month();
-    int yday();
-    int mday();
-    int wday();
-    int hour();
-    int minute();
-    int second();
-    int milisecond();
-    int microsecond();
-    int nanosecond();
+    std::size_t year();
+    std::size_t month();
+    std::size_t yday();
+    std::size_t mday();
+    std::size_t wday();
+    std::size_t hour();
+    std::size_t minute();
+    std::size_t second();
+    std::size_t milisecond();
+    std::size_t microsecond();
+    std::size_t nanosecond();
     std::string time_zone();
 
     std::chrono::time_point<Clock> time_point();
@@ -64,15 +64,85 @@ Date<Clock>::Date(bool local) : _time_point(std::chrono::system_clock::now()), _
 template <typename Clock>
 Date<Clock>::~Date() {}
 
-template<typename Clock>
-int Date<Clock>::year() 
+template <typename Clock>
+std::size_t Date<Clock>::year()
 {
     std::tm tmb = get_tm(_time_point, _local);
     return tmb.tm_year();
 }
 
-template<typename Clock>
-std::string Date<Clock>::time_zone() 
+template <typename Clock>
+std::size_t Date<Clock>::month()
+{
+    std::tm tmb = get_tm(_time_point, _local);
+    return tmb.tm_mon();
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::yday()
+{
+    std::tm tmb = get_tm(_time_point, _local);
+    return tmb.tm_yday();
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::mday()
+{
+    std::tm tmb = get_tm(_time_point, _local);
+    return tmb.tm_mday();
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::wday()
+{
+    std::tm tmb = get_tm(_time_point, _local);
+    return tmb.tm_wday();
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::hour()
+{
+    std::tm tmb = get_tm(_time_point, _local);
+    return tmb.tm_hour();
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::minute()
+{
+    std::tm tmb = get_tm(_time_point, _local);
+    return tmb.tm_min();
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::second()
+{
+    std::tm tmb = get_tm(_time_point, _local);
+    return tmb.tm_sec;
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::milisecond()
+{
+    auto milisec = std::chrono::duration_cast<std::chrono::milliseconds>(_time_point.time_since_epoch()).count();
+    return milisec % 1000;
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::microsecond()
+{
+    auto microsec = std::chrono::duration_cast<std::chrono::microseconds>(_time_point.time_since_epoch()).count();
+    return microsec % (1000 * 1000);
+}
+
+template <typename Clock>
+std::size_t Date<Clock>::nanosecond()
+{
+    auto nanosec = std::chrono::duration_cast<std::chrono::nanoseconds>(_time_point.time_since_epoch()).count();
+    return nanosec % (1000 * 1000 * 1000);
+}
+
+template <typename Clock>
+std::string Date<Clock>::time_zone()
 {
     std::tm tmb = get_tm(_time_point, _local);
     return std::string(tmb.tm_zone);
