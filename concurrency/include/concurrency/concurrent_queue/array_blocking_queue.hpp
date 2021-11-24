@@ -8,9 +8,14 @@
 
 #include "concurrency/concurrent_queue/concurrent_queue.hpp"
 
-//ArrayBlockingQueue 底层由数组实现的队列, 默认容量std::numeric_limits<std::size_t>::max()
+/**
+ * @brief 底层由数组实现的队列
+ * 
+ * @tparam T 元素种类
+ * @tparam N 队列容量, 默认容量std::numeric_limits<std::size_t>::max()
+ */
 template <typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-class ArrayBlockingQueue : public ConcurrentQueue<T>
+class ArrayBlockingQueue
 {
 private:
     std::array<T, N> _queue;
@@ -22,6 +27,7 @@ private:
     std::size_t _count = 0;
 
 public:
+    typedef T value_type;
     ArrayBlockingQueue();
     ~ArrayBlockingQueue();
     ArrayBlockingQueue(const ArrayBlockingQueue &) = delete;
@@ -29,29 +35,23 @@ public:
     /**
      * @brief 阻塞地将元素的放入队列
      */
-    virtual void push(T &&);
+    virtual void push(T &&ele);
     /**
      * @brief 阻塞地将元素的放入队列
      */
-    virtual void push(const T &);
+    virtual void push(const T &ele);
     /**
      * @brief 将元素的放入队列, 立即返回
      * @param T 入队元素
      * @return bool 入队是否成功
      */
-    virtual bool try_push(T &&);
+    virtual bool try_push(T &&ele);
     /**
      * @brief 将元素的放入队列, 立即返回
      * @param T 入队元素
      * @return bool 入队是否成功
      */
-    virtual bool try_push(const T &);
-    /**
-     * @brief 将元素的放入队列
-     * @param T 入队元素
-     * @return bool 入队是否成功
-     */
-    virtual bool wait_push(T &&, std::size_t seconds, std::size_t nano_seconds = 0);
+    virtual bool try_push(const T &ele);
 
     /**
      * @brief 等待地将元素放进队列
@@ -80,30 +80,28 @@ public:
     bool wait_push(const T &ele, const std::chrono::duration<Rep, Period> &wait_duration);
 
     /**
-     * @brief 将元素的放入队列
-     * @param T 入队元素
-     * @return bool 入队是否成功
-     */
-    virtual bool wait_push(const T &, std::size_t seconds, std::size_t nano_seconds = 0);
-    /**
      * @brief 将元素弹出队列
      */
     virtual T pop();
     /**
      * @brief try_pop 弹出队列元素, 立即返回
      *
-     * @param value 弹出元素赋值对象
+     * @param ele 弹出元素赋值对象
      */
-    virtual bool try_pop(T &value);
-    /**
-     * @brief wait_pop 弹出队列元素
-     *
-     * @param value 弹出元素赋值对象
-     */
-    virtual bool wait_pop(T &value, std::size_t seconds, std::size_t nano_seconds = 0);
+    virtual bool try_pop(T &ele);
 
+    /**
+     * @brief 等待地将元素弹出队列
+     * 
+     * @tparam Rep 刻度数的算术类型
+     * @tparam Period 滴答周期
+     * @param ele 弹出元素赋值对象
+     * @param wait_duration 等待时间
+     * @return true 入队成功
+     * @return false 入队失败
+     */
     template <class Rep, class Period>
-    bool wait_pop(T &value, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_pop(T &ele, const std::chrono::duration<Rep, Period> &wait_duration);
 
     /**
      * @brief 返回队列大小
@@ -207,44 +205,6 @@ bool ArrayBlockingQueue<T, N>::try_push(const T &ele)
 }
 
 template <typename T, std::size_t N>
-bool ArrayBlockingQueue<T, N>::wait_push(T &&ele, std::size_t seconds, std::size_t nano_seconds)
-{
-    bool res;
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        std::size_t nonas = seconds * 1e9 + nano_seconds;
-        res = _not_full.wait_for(lock, std::chrono::nanoseconds(nonas), [this]()
-                                 { return !full(); });
-        if (res)
-        {
-            this->insert(std::forward<T>(ele));
-            _not_empty.notify_one();
-        }
-    }
-
-    return res;
-}
-
-template <typename T, std::size_t N>
-bool ArrayBlockingQueue<T, N>::wait_push(const T &ele, std::size_t seconds, std::size_t nano_seconds)
-{
-    bool res;
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        std::size_t nonas = seconds * 1e9 + nano_seconds;
-        res = _not_full.wait_for(lock, std::chrono::nanoseconds(nonas), [this]()
-                                 { return !full(); });
-        if (res)
-        {
-            this->insert(ele);
-            _not_empty.notify_one();
-        }
-    }
-
-    return res;
-}
-
-template <typename T, std::size_t N>
 template <class Rep, class Period>
 bool ArrayBlockingQueue<T, N>::wait_push(T &&ele, const std::chrono::duration<Rep, Period> &wait_duration)
 {
@@ -312,25 +272,6 @@ bool ArrayBlockingQueue<T, N>::try_pop(T &ele)
     }
 
     return false;
-}
-
-template <typename T, std::size_t N>
-bool ArrayBlockingQueue<T, N>::wait_pop(T &ele, std::size_t seconds, std::size_t nano_seconds)
-{
-    bool res;
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        std::size_t nonas = seconds * 1e9 + nano_seconds;
-        res = _not_empty.wait_for(lock, std::chrono::nanoseconds(nonas), [this]()
-                                  { return !empty(); });
-        if (res)
-        {
-            ele = remove();
-            _not_full.notify_one();
-        }
-    }
-
-    return res;
 }
 
 template <typename T, std::size_t N>

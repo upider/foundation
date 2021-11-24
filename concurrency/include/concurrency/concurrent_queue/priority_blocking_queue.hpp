@@ -8,9 +8,14 @@
 
 #include "concurrency/concurrent_queue/concurrent_queue.hpp"
 
-//PriorityBlockingQueue 多线程优先级队列, 无界
+/**
+ * @brief 多线程优先级队列, 无界
+ * 
+ * @tparam T 元素类型
+ * @tparam Compare 排序方式默认std::less<int>
+ */
 template <typename T, typename Compare = std::less<T>>
-class PriorityBlockingQueue : public ConcurrentQueue<T>
+class PriorityBlockingQueue
 {
 private:
     std::priority_queue<T, std::vector<T>, Compare> _queue;
@@ -18,6 +23,7 @@ private:
     std::condition_variable_any _not_empty;
 
 public:
+    typedef T value_type;
     PriorityBlockingQueue();
     virtual ~PriorityBlockingQueue();
     PriorityBlockingQueue(const PriorityBlockingQueue &) = delete;
@@ -26,36 +32,23 @@ public:
     /**
      * @brief 阻塞地将元素的放入队列
      */
-    virtual void push(T &&);
+    virtual void push(T &&ele);
     /**
      * @brief 阻塞地将元素的放入队列
      */
-    virtual void push(const T &);
+    virtual void push(const T &ele);
     /**
      * @brief 将元素的放入队列, 立即返回
      * @param T 入队元素
      * @return bool 入队是否成功
      */
-    virtual bool try_push(T &&);
+    virtual bool try_push(T &&ele);
     /**
      * @brief 将元素的放入队列, 立即返回
      * @param T 入队元素
      * @return bool 入队是否成功
      */
-    virtual bool try_push(const T &);
-    /**
-     * @brief 将元素的放入队列
-     * @param T 入队元素
-     * @return bool 入队是否成功
-     */
-    virtual bool wait_push(T &&, std::size_t seconds, std::size_t nano_seconds = 0);
-    /**
-     * @brief 将元素的放入队列
-     * @param T 入队元素
-     * @return bool 入队是否成功
-     */
-    virtual bool wait_push(const T &, std::size_t seconds, std::size_t nano_seconds = 0);
-
+    virtual bool try_push(const T &ele);
     /**
      * @brief 等待地将元素放进队列
      * 
@@ -90,16 +83,20 @@ public:
      *
      * @param value 弹出元素赋值对象
      */
-    virtual bool try_pop(T &value);
-    /**
-     * @brief wait_pop 弹出队列元素
-     *
-     * @param value 弹出元素赋值对象
-     */
-    virtual bool wait_pop(T &value, std::size_t seconds, std::size_t nano_seconds = 0);
+    virtual bool try_pop(T &ele);
 
+    /**
+     * @brief 将元素弹出队列
+     * 
+     * @tparam Rep 刻度数的算术类型
+     * @tparam Period 滴答周期
+     * @param ele 出队元素
+     * @param wait_duration 等待时间
+     * @return true 入队成功
+     * @return false 入队失败
+     */
     template <class Rep, class Period>
-    bool wait_pop(T &value, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_pop(T &ele, const std::chrono::duration<Rep, Period> &wait_duration);
 
     /**
      * @brief 返回队列大小
@@ -183,7 +180,6 @@ template <typename T, typename Compare>
 template <class Rep, class Period>
 bool PriorityBlockingQueue<T, Compare>::wait_push(const T &ele, const std::chrono::duration<Rep, Period> &wait_duration)
 {
-    // std::unique_lock<std::mutex> lock(_mutex);
     bool res = _mutex.try_lock_for(wait_duration);
     if (res)
     {
@@ -198,7 +194,6 @@ template <typename T, typename Compare>
 template <class Rep, class Period>
 bool PriorityBlockingQueue<T, Compare>::wait_push(T &&ele, const std::chrono::duration<Rep, Period> &wait_duration)
 {
-    // std::unique_lock<std::mutex> lock(_mutex);
     bool res = _mutex.try_lock_for(wait_duration);
     if (res)
     {
@@ -210,44 +205,12 @@ bool PriorityBlockingQueue<T, Compare>::wait_push(T &&ele, const std::chrono::du
 }
 
 template <typename T, typename Compare>
-bool PriorityBlockingQueue<T, Compare>::wait_push(T &&ele, std::size_t seconds, std::size_t nano_seconds)
-{
-    // std::unique_lock<std::mutex> lock(_mutex);
-    std::size_t nonas = seconds * 1e9 + nano_seconds;
-    auto res = _not_empty.wait_for(_mutex, std::chrono::nanoseconds(nonas));
-    if (res == std::cv_status::no_timeout)
-    {
-        this->insert(std::forward<T>(ele));
-        _mutex.unlock();
-        _not_empty.notify_one();
-        return true;
-    }
-    return false;
-}
-
-template <typename T, typename Compare>
-bool PriorityBlockingQueue<T, Compare>::wait_push(const T &ele, std::size_t seconds, std::size_t nano_seconds)
-{
-    // std::unique_lock<std::mutex> lock(_mutex);
-    std::size_t nonas = seconds * 1e9 + nano_seconds;
-    auto res = _not_empty.wait_for(_mutex, std::chrono::nanoseconds(nonas));
-    if (res == std::cv_status::no_timeout)
-    {
-        this->insert(ele);
-        _mutex.unlock();
-        _not_empty.notify_one();
-        return true;
-    }
-    return false;
-}
-
-template <typename T, typename Compare>
 T PriorityBlockingQueue<T, Compare>::pop()
 {
-    // std::unique_lock<std::mutex> lock(_mutex);
-    _not_empty.wait(_mutex, [this]() { return !empty(); });
+    _not_empty.wait(_mutex, [this]()
+                    { return !empty(); });
     auto ele = this->remove();
-
+    _mutex.unlock();
     return ele;
 }
 
@@ -269,30 +232,14 @@ bool PriorityBlockingQueue<T, Compare>::try_pop(T &ele)
 }
 
 template <typename T, typename Compare>
-bool PriorityBlockingQueue<T, Compare>::wait_pop(T &ele, std::size_t seconds, std::size_t nano_seconds)
-{
-    // std::unique_lock<std::mutex> lock(_mutex);
-    std::size_t nonas = seconds * 1e9 + nano_seconds;
-    if (_not_empty.wait_for(_mutex, std::chrono::nanoseconds(nonas), [this]()
-                            { return !empty(); }))
-    {
-        ele = remove();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-template <typename T, typename Compare>
 template <class Rep, class Period>
 bool PriorityBlockingQueue<T, Compare>::wait_pop(T &ele, const std::chrono::duration<Rep, Period> &wait_duration)
 {
-    // std::unique_lock<std::mutex> lock(_mutex);
-    if (_not_empty.wait_for(_mutex, wait_duration, [this]() { return !empty(); }))
+    if (_not_empty.wait_for(_mutex, wait_duration, [this]()
+                            { return !empty(); }))
     {
         ele = remove();
+        _mutex.unlock();
         return true;
     }
     else

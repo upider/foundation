@@ -21,15 +21,15 @@ int main(int argc, char const *argv[])
     signal(SIGSEGV, handler);
     signal(SIGABRT, handler);
 
-    using priority_queue_type = PriorityBlockingQueue<std::shared_ptr<PriorityExecutorTask>, TaskCompare>;
-    std::unique_ptr<priority_queue_type> queue = std::unique_ptr<priority_queue_type>(new priority_queue_type());
-    PriorityExecutor executor(2, std::move(queue), std::make_shared<NamedThreadFactory>("testxx"));
+    PriorityExecutor executor(2, std::make_shared<NamedThreadFactory>("testxx"));
+    executor.start();
 
-    executor.execute([]()
-                     { std::cout << current_thread_name() << std::endl; },
-                     100);
+    executor.execute(100, []()
+                     { std::cout << current_thread_name() << std::endl; });
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
-    executor.shutdown();
+    std::cout << "shutdown" << std::endl;
+    executor.stop();
+    // executor.shutdown();
     return 0;
 }

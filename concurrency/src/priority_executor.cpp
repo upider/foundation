@@ -1,26 +1,55 @@
 #include "concurrency/concurrent_queue/priority_blocking_queue.hpp"
-#include "concurrency/executor/priority_executor_task.hpp"
+#include "concurrency/executor/executor_task.hpp"
 #include "concurrency/executor/priority_executor.hpp"
 
-bool TaskCompare::operator()(const std::shared_ptr<PriorityExecutorTask> t1, const std::shared_ptr<PriorityExecutorTask> t2)
+bool TaskCompare::operator()(const std::pair<std::shared_ptr<ExecutorTask>, int> &t1, const std::pair<std::shared_ptr<ExecutorTask>, int> &t2)
 {
-    return t1->priority() > t2->priority();
+    return t1.second > t2.second;
 }
 
-PriorityExecutor::FunctionExecutorTask::FunctionExecutorTask(std::function<void()> func, std::size_t prio)
-    : PriorityExecutorTask(prio), _func(std::move(func)) {}
-
-void PriorityExecutor::FunctionExecutorTask::run()
+void PriorityExecutor::run()
 {
-    _func();
+    while (1)
+    {
+        std::pair<std::shared_ptr<ExecutorTask>, int> task;
+        switch (_phase.load())
+        {
+        case this->RUNNING:
+        {
+            if (_task_queue->wait_pop(task, std::chrono::milliseconds(10)))
+            {
+                task.first->run();
+            }
+            break;
+        }
+        case this->SHUTDOWN:
+        {
+            if (_task_queue->try_pop(task))
+            {
+                task.first->run();
+                break;
+            }
+            else
+            {
+                return;
+            }
+        }
+        case this->STOP:
+        {
+            return;
+        }
+        default:
+            break;
+        }
+    }
 }
 
-PriorityExecutor::PriorityExecutor(std::size_t threads, std::unique_ptr<PriorityBlockingQueue<std::shared_ptr<PriorityExecutorTask>, TaskCompare>> task_queue, std::shared_ptr<ThreadFactory> thread_factory)
-    : Executor(threads, std::move(task_queue), thread_factory) {}
+PriorityExecutor::PriorityExecutor(std::size_t threads, std::shared_ptr<ThreadFactory> thread_factory)
+    : Executor(threads, thread_factory) {}
     
 PriorityExecutor::~PriorityExecutor() {}
 
-bool PriorityExecutor::execute(std::shared_ptr<PriorityExecutorTask> task)
+bool PriorityExecutor::execute(int priority, std::shared_ptr<ExecutorTask> task)
 {
     if (_phase != RUNNING)
     {
@@ -28,12 +57,12 @@ bool PriorityExecutor::execute(std::shared_ptr<PriorityExecutorTask> task)
     }
     else
     {
-        _task_queue->push(task);
+        _task_queue->push(std::pair<std::shared_ptr<ExecutorTask>, int>(task, priority));
         return true;
     }
 }
 
-bool PriorityExecutor::execute(std::function<void()> task, std::size_t priority)
+bool PriorityExecutor::execute(int priority, std::function<void()> task)
 {
     if (_phase != RUNNING)
     {
@@ -41,12 +70,12 @@ bool PriorityExecutor::execute(std::function<void()> task, std::size_t priority)
     }
     else
     {
-        _task_queue->push(std::make_shared<FunctionExecutorTask>(task, priority));
+        _task_queue->push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(task), priority));
         return true;
     }
 }
 
-bool PriorityExecutor::try_execute(std::shared_ptr<PriorityExecutorTask> task)
+bool PriorityExecutor::try_execute(int priority, std::shared_ptr<ExecutorTask> task)
 {
     if (_phase != RUNNING)
     {
@@ -54,11 +83,11 @@ bool PriorityExecutor::try_execute(std::shared_ptr<PriorityExecutorTask> task)
     }
     else
     {
-        return _task_queue->try_push(task);
+        return _task_queue->try_push(std::pair<std::shared_ptr<ExecutorTask>, int>(task, priority));
     }
 }
 
-bool PriorityExecutor::try_execute(std::function<void()> task, std::size_t priority)
+bool PriorityExecutor::try_execute(int priority, std::function<void()> task)
 {
     if (_phase != RUNNING)
     {
@@ -66,30 +95,6 @@ bool PriorityExecutor::try_execute(std::function<void()> task, std::size_t prior
     }
     else
     {
-        return _task_queue->try_push(std::make_shared<FunctionExecutorTask>(task, priority));
-    }
-}
-
-bool PriorityExecutor::wait_execute(std::function<void()> task, std::size_t priority, std::size_t timeout_sec, std::size_t timeout_nsec)
-{
-    if (_phase != RUNNING)
-    {
-        return false;
-    }
-    else
-    {
-        return _task_queue->wait_push(std::make_shared<FunctionExecutorTask>(task, priority), timeout_sec, timeout_nsec);
-    }
-}
-
-bool PriorityExecutor::wait_execute(std::shared_ptr<PriorityExecutorTask> task, std::size_t timeout_sec, std::size_t timeout_nsec)
-{
-    if (_phase != RUNNING)
-    {
-        return false;
-    }
-    else
-    {
-        return _task_queue->wait_push(task, timeout_sec, timeout_nsec);
+        return _task_queue->try_push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(task), priority));
     }
 }

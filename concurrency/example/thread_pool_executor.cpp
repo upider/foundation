@@ -32,8 +32,9 @@ int main(int argc, char const *argv[])
     signal(SIGABRT, handler);
 
     using queue_type = ArrayBlockingQueue<std::shared_ptr<ExecutorTask>, 10>;
-    std::unique_ptr<ConcurrentQueue<std::shared_ptr<ExecutorTask>>> queue = std::unique_ptr<queue_type>(new queue_type());
-    ThreadPoolExecutor *executor = new ThreadPoolExecutor(2, std::move(queue), std::make_shared<NamedThreadFactory>("test"));
+    auto queue = std::unique_ptr<queue_type>(new queue_type());
+    auto *executor = new ThreadPoolExecutor<ArrayBlockingQueue<std::shared_ptr<ExecutorTask>, 10>>(2, std::move(queue), std::make_shared<NamedThreadFactory>("test"));
+    executor->start();
 
     auto task = std::make_shared<TestTask>();
     executor->execute(task);
