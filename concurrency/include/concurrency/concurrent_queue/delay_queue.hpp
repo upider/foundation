@@ -9,13 +9,13 @@
 
 #include "concurrency/mutex/null_mutex.hpp"
 
-template <typename T, typename CLOCK = std::chrono::system_clock>
+template <typename T, typename Clock = std::chrono::system_clock>
 class DelayQueue
 {
 public:
     typedef T value_type;
 
-    using time_point = std::chrono::time_point<CLOCK>;
+    using time_point = std::chrono::time_point<Clock>;
     using time_pair = std::pair<T, time_point>;
     using Compare = struct
     {
@@ -41,7 +41,7 @@ public:
      * @param ele 入队元素
      * @param tp time_point 超时时间点
      */
-    void push(T &&ele, time_point tp);
+    void push(const time_point& tp, T &&ele);
 
     /**
      * @brief 阻塞地将元素的放入队列
@@ -49,25 +49,25 @@ public:
      * @param ele 入队元素
      * @param tp time_point 超时时间点
      */
-    void push(const T &, time_point tp);
+    void push(const time_point& tp, const T &ele);
     /**
      * @brief 将元素的放入队列
      * @param T 入队元素
      * @return bool 入队是否成功
      */
-    bool try_push(T &&, time_point tp);
+    bool try_push(const time_point& tp, T &&ele);
     /**
      * @brief 将元素的放入队列
      * @param T 入队元素
      * @return bool 入队是否成功
      */
-    bool try_push(const T &, time_point tp);
+    bool try_push(const time_point& tp, const T &ele);
 
     template <class Rep, class Period>
-    bool wait_push(const T &ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_push(const time_point& tp, const T &ele, const std::chrono::duration<Rep, Period> &wait_duration);
 
     template <class Rep, class Period>
-    bool wait_push(T &&ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_push(const time_point& tp, T &&ele, const std::chrono::duration<Rep, Period> &wait_duration);
 
     /**
      * @brief 将元素弹出队列
@@ -81,7 +81,20 @@ public:
     bool try_pop(T &value);
 
     template <class Rep, class Period>
-    bool wait_pop(T &&ele, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_pop(T &ele, const std::chrono::duration<Rep, Period> &wait_duration);
+
+    template <class Rep, class Period>
+    void push(const std::chrono::duration<Rep, Period> &delay, T &&ele);
+    template <class Rep, class Period>
+    void push(const std::chrono::duration<Rep, Period> &delay, const T &ele);
+    template <class Rep, class Period>
+    bool try_push(const std::chrono::duration<Rep, Period> &delay, T &&ele);
+    template <class Rep, class Period>
+    bool try_push(const std::chrono::duration<Rep, Period> &delay, const T &);
+    template <class Rep, class Period, class WRep, class WPeriod>
+    bool wait_push(const std::chrono::duration<Rep, Period> &delay, const T &ele, const std::chrono::duration<WRep, WPeriod> &wait_duration);
+    template <class Rep, class Period, class WRep, class WPeriod>
+    bool wait_push(const std::chrono::duration<Rep, Period> &delay, T &&ele, const std::chrono::duration<WRep, WPeriod> &wait_duration);
     /**
      * @brief 返回队列大小
      */
@@ -96,18 +109,18 @@ public:
     bool empty();
 };
 
-template <typename T, typename CLOCK>
-DelayQueue<T, CLOCK>::DelayQueue()
+template <typename T, typename Clock>
+DelayQueue<T, Clock>::DelayQueue()
 {
 }
 
-template <typename T, typename CLOCK>
-DelayQueue<T, CLOCK>::~DelayQueue()
+template <typename T, typename Clock>
+DelayQueue<T, Clock>::~DelayQueue()
 {
 }
 
-template <typename T, typename CLOCK>
-void DelayQueue<T, CLOCK>::push(T &&ele, time_point tp)
+template <typename T, typename Clock>
+void DelayQueue<T, Clock>::push(const time_point& tp, T &&ele)
 {
     _mutex.lock();
     _queue.emplace(std::forward<T>(ele), tp);
@@ -115,8 +128,8 @@ void DelayQueue<T, CLOCK>::push(T &&ele, time_point tp)
     _cv.notify_all();
 }
 
-template <typename T, typename CLOCK>
-void DelayQueue<T, CLOCK>::push(const T &ele, time_point tp)
+template <typename T, typename Clock>
+void DelayQueue<T, Clock>::push(const time_point& tp, const T &ele)
 {
     _mutex.lock();
     _queue.emplace(ele, tp);
@@ -124,8 +137,8 @@ void DelayQueue<T, CLOCK>::push(const T &ele, time_point tp)
     _cv.notify_all();
 }
 
-template <typename T, typename CLOCK>
-bool DelayQueue<T, CLOCK>::try_push(T &&ele, time_point tp)
+template <typename T, typename Clock>
+bool DelayQueue<T, Clock>::try_push(const time_point& tp, T &&ele)
 {
     if (_mutex.try_lock())
     {
@@ -137,8 +150,8 @@ bool DelayQueue<T, CLOCK>::try_push(T &&ele, time_point tp)
     return false;
 }
 
-template <typename T, typename CLOCK>
-bool DelayQueue<T, CLOCK>::try_push(const T &ele, time_point tp)
+template <typename T, typename Clock>
+bool DelayQueue<T, Clock>::try_push(const time_point& tp, const T &ele)
 {
     if (_mutex.try_lock())
     {
@@ -150,9 +163,9 @@ bool DelayQueue<T, CLOCK>::try_push(const T &ele, time_point tp)
     return false;
 }
 
-template <typename T, typename CLOCK>
+template <typename T, typename Clock>
 template <class Rep, class Period>
-bool DelayQueue<T, CLOCK>::wait_push(const T &ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration)
+bool DelayQueue<T, Clock>::wait_push(const time_point& tp, const T &ele, const std::chrono::duration<Rep, Period> &wait_duration)
 {
     bool m = _mutex.try_lock_for(wait_duration);
     if (m)
@@ -163,9 +176,9 @@ bool DelayQueue<T, CLOCK>::wait_push(const T &ele, time_point tp, const std::chr
     return m;
 }
 
-template <typename T, typename CLOCK>
+template <typename T, typename Clock>
 template <class Rep, class Period>
-bool DelayQueue<T, CLOCK>::wait_push(T &&ele, time_point tp, const std::chrono::duration<Rep, Period> &wait_duration)
+bool DelayQueue<T, Clock>::wait_push(const time_point& tp, T &&ele, const std::chrono::duration<Rep, Period> &wait_duration)
 {
     bool m = _mutex.try_lock_for(wait_duration);
     if (m)
@@ -176,8 +189,8 @@ bool DelayQueue<T, CLOCK>::wait_push(T &&ele, time_point tp, const std::chrono::
     return m;
 }
 
-template <typename T, typename CLOCK>
-T DelayQueue<T, CLOCK>::pop()
+template <typename T, typename Clock>
+T DelayQueue<T, Clock>::pop()
 {
     while (true)
     {
@@ -216,8 +229,8 @@ T DelayQueue<T, CLOCK>::pop()
     }
 }
 
-template <typename T, typename CLOCK>
-bool DelayQueue<T, CLOCK>::try_pop(T &value)
+template <typename T, typename Clock>
+bool DelayQueue<T, Clock>::try_pop(T &value)
 {
     if (_mutex.try_lock())
     {
@@ -255,9 +268,9 @@ bool DelayQueue<T, CLOCK>::try_pop(T &value)
     return false;
 }
 
-template <typename T, typename CLOCK>
+template <typename T, typename Clock>
 template <class Rep, class Period>
-bool DelayQueue<T, CLOCK>::wait_pop(T &&ele, const std::chrono::duration<Rep, Period> &wait_duration)
+bool DelayQueue<T, Clock>::wait_pop(T &ele, const std::chrono::duration<Rep, Period> &wait_duration)
 {
     if (_mutex.try_lock_for(wait_duration))
     {
@@ -295,20 +308,62 @@ bool DelayQueue<T, CLOCK>::wait_pop(T &&ele, const std::chrono::duration<Rep, Pe
     return false;
 }
 
-template <typename T, typename CLOCK>
-std::size_t DelayQueue<T, CLOCK>::size()
+template <typename T, typename Clock>
+template <class Rep, class Period>
+void DelayQueue<T, Clock>::push(const std::chrono::duration<Rep, Period> &delay, T &&ele)
+{
+    return push(std::forward<>(ele), Clock::now() + delay);
+}
+
+template <typename T, typename Clock>
+template <class Rep, class Period>
+void DelayQueue<T, Clock>::push(const std::chrono::duration<Rep, Period> &delay, const T &ele)
+{
+    return push(ele, Clock::now() + delay);
+}
+
+template <typename T, typename Clock>
+template <class Rep, class Period>
+bool DelayQueue<T, Clock>::try_push(const std::chrono::duration<Rep, Period> &delay, T &&ele)
+{
+    return try_push(std::forward<>(ele), Clock::now() + delay);
+}
+
+template <typename T, typename Clock>
+template <class Rep, class Period>
+bool DelayQueue<T, Clock>::try_push(const std::chrono::duration<Rep, Period> &delay, const T &ele)
+{
+    return try_push(ele, Clock::now() + delay);
+}
+
+template <typename T, typename Clock>
+template <class Rep, class Period, class WRep, class WPeriod>
+bool DelayQueue<T, Clock>::wait_push(const std::chrono::duration<Rep, Period> &delay, const T &ele, const std::chrono::duration<WRep, WPeriod> &wait_duration)
+{
+    return wait_push(ele, Clock::now() + delay, wait_duration);
+}
+
+template <typename T, typename Clock>
+template <class Rep, class Period, class WRep, class WPeriod>
+bool DelayQueue<T, Clock>::wait_push(const std::chrono::duration<Rep, Period> &delay, T &&ele, const std::chrono::duration<WRep, WPeriod> &wait_duration)
+{
+    return wait_push(std::forward<>(ele), Clock::now() + delay, wait_duration);
+}
+
+template <typename T, typename Clock>
+std::size_t DelayQueue<T, Clock>::size()
 {
     return _queue.size();
 }
 
-template <typename T, typename CLOCK>
-std::size_t DelayQueue<T, CLOCK>::cap()
+template <typename T, typename Clock>
+std::size_t DelayQueue<T, Clock>::cap()
 {
     return std::numeric_limits<std::size_t>::max();
 }
 
-template <typename T, typename CLOCK>
-bool DelayQueue<T, CLOCK>::empty()
+template <typename T, typename Clock>
+bool DelayQueue<T, Clock>::empty()
 {
     return _queue.empty();
 }

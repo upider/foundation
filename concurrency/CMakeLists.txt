@@ -4,6 +4,8 @@ add_library(concurrency SHARED ${SRCS})
 
 add_executable(delay_queue example/delay_queue.cpp ${SRCS})
 
+add_executable(schedule_executor example/schedule_executor.cpp ${SRCS})
+
 add_executable(queue example/queue.cpp ${SRCS})
 target_link_libraries(queue stacktrace)
 

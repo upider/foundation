@@ -73,8 +73,8 @@ public:
     bool wait_execute(std::shared_ptr<ExecutorTask> task, const std::chrono::duration<Rep, Period> &wait_duration);
 };
 
-template <typename Queue>
-void ThreadPoolExecutor<Queue>::run()
+template<typename Queue>
+void ThreadPoolExecutor<Queue>::run() 
 {
     while (1)
     {

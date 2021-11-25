@@ -2,11 +2,6 @@
 #include "concurrency/executor/executor_task.hpp"
 #include "concurrency/executor/priority_executor.hpp"
 
-bool TaskCompare::operator()(const std::pair<std::shared_ptr<ExecutorTask>, int> &t1, const std::pair<std::shared_ptr<ExecutorTask>, int> &t2)
-{
-    return t1.second > t2.second;
-}
-
 void PriorityExecutor::run()
 {
     while (1)

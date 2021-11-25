@@ -5,15 +5,11 @@
 
 template <typename T, typename Compare>
 class PriorityBlockingQueue;
+template<typename T>
+class PairExecutorTaskComparator;
 class ExecutorTask;
 
-class TaskCompare
-{
-public:
-    bool operator()(const std::pair<std::shared_ptr<ExecutorTask>, int> &t1, const std::pair<std::shared_ptr<ExecutorTask>, int> &t2);
-};
-
-class PriorityExecutor : public Executor<PriorityBlockingQueue<std::pair<std::shared_ptr<ExecutorTask>, int>, TaskCompare>, std::pair<std::shared_ptr<ExecutorTask>, int>>
+class PriorityExecutor : public Executor<PriorityBlockingQueue<std::pair<std::shared_ptr<ExecutorTask>, int>, PairExecutorTaskComparator<std::greater<int>>>, std::pair<std::shared_ptr<ExecutorTask>, int>>
 {
 protected:
     void run() override;

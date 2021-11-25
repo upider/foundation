@@ -14,9 +14,9 @@ int main(int argc, char const *argv[])
 
     std::thread producer([&]()
                          {
-                             dlq.push(6, tp1);
-                             dlq.push(4, tp2);
-                             dlq.push(100, tp3);
+                             dlq.push(tp1, 6);
+                             dlq.push(tp2, 4);
+                             dlq.push(tp3, 100);
                          });
 
     std::thread consumer1([&]()

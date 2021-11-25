@@ -2,6 +2,7 @@
 #define __EXECUTOR_TASK_HPP__
 
 #include <functional>
+#include <memory>
 
 class ExecutorTask
 {
@@ -22,4 +23,19 @@ public:
     virtual void run();
 };
 
-#endif // __EXECUTOR_TASK_HPP__
+template<typename Comparator>
+class PairExecutorTaskComparator
+{
+public:
+    template<typename T>
+    bool operator()(const std::pair<std::shared_ptr<ExecutorTask>, T>& x, const std::pair<std::shared_ptr<ExecutorTask>, T>& y);
+};
+
+template<typename Comparator>
+template<typename T>
+bool PairExecutorTaskComparator<Comparator>::operator()(const std::pair<std::shared_ptr<ExecutorTask>, T>& x, const std::pair<std::shared_ptr<ExecutorTask>, T>& y) 
+{
+    return Comparator()(x.second, y.second);
+}
+
+#endif /* __EXECUTOR_TASK_HPP__ */
