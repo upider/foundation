@@ -46,7 +46,7 @@ void PriorityExecutor::run()
 
 PriorityExecutor::PriorityExecutor(std::size_t threads, std::shared_ptr<ThreadFactory> thread_factory)
     : Executor(threads, thread_factory) {}
-    
+
 PriorityExecutor::~PriorityExecutor() {}
 
 bool PriorityExecutor::execute(int priority, std::shared_ptr<ExecutorTask> task)

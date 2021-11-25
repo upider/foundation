@@ -224,11 +224,17 @@ bool PriorityBlockingQueue<T, Compare>::try_pop(T &ele)
             _mutex.unlock();
             return false;
         }
-        ele = this->remove();
-        _mutex.unlock();
-        return true;
+        else
+        {
+            ele = this->remove();
+            _mutex.unlock();
+            return true;
+        }
     }
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
 template <typename T, typename Compare>
@@ -244,6 +250,7 @@ bool PriorityBlockingQueue<T, Compare>::wait_pop(T &ele, const std::chrono::dura
     }
     else
     {
+        _mutex.unlock();
         return false;
     }
 }

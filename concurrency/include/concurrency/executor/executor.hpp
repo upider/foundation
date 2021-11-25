@@ -101,7 +101,8 @@ Executor<Queue, Task>::Thread::Thread(std::thread thread) : _thread(std::move(th
 template <typename Queue, typename Task>
 Executor<Queue, Task>::Thread::~Thread()
 {
-    _thread.join();
+    if (_thread.joinable())
+        _thread.join();
 }
 
 template <typename Queue, typename Task>

@@ -23,8 +23,8 @@ public:
 };
 
 std::size_t N = 10;
-ArrayBlockingQueue<int, 10> queue;
-// PriorityBlockingQueue<int> queue;
+// ArrayBlockingQueue<int, 10> queue;
+PriorityBlockingQueue<int> queue;
 // LinkedBlockingQueue<int> queue(N);
 
 void task_producer()

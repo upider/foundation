@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
     std::cout << "shutdown" << std::endl;
-    executor.stop();
-    // executor.shutdown();
+    // executor.stop();
+    executor.shutdown();
     return 0;
 }
