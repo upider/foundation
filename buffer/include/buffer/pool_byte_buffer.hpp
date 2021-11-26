@@ -11,7 +11,7 @@
 class PoolByteBufferAllocator;
 class PageHeap;
 
-class PoolByteBuffer : public ByteBuffer
+class PoolByteBuffer : public ByteBuffer<Byte>
 {
 private:
     PoolByteBufferAllocator &_pbba;
@@ -38,4 +38,4 @@ public:
     Byte *data();
 };
 
-#endif // __POOL_BYTE_BUFFER_HPP__
+#endif /* __POOL_BYTE_BUFFER_HPP__ */

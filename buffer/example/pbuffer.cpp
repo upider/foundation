@@ -7,7 +7,7 @@
 #include <atomic>
 
 #include "concurrency/mutex/null_mutex.hpp"
-#include "pool/pool_byte_buffer.hpp"
+#include "buffer/pool_byte_buffer.hpp"
 #include "stack_trace/stack_trace.hpp"
 
 void handler(int)

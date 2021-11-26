@@ -2,6 +2,8 @@ aux_source_directory(src SRCS)
 
 add_library(buffer SHARED ${SRCS})
 
+add_executable(byte_buffer example/byte_buffer.cpp ${SRCS})
+
 add_executable(byte example/byte.cpp ${SRCS})
 target_link_libraries(byte buffer concurrency)
 
