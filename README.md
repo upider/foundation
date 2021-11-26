@@ -42,12 +42,17 @@
   - [x]  rw_mutex
   - [x]  spin_mutex
 
+## buffer
+
+- [x] buffer pool(lock free)
+
 ## TODO
 
+- [ ] byte buffer
+- [ ] Selector + Channel
 - [ ] HeapTimer
 - [ ] WheelTimer
 - [ ] HierarchicalWheelTimer
 - [ ] concurrent hash map
 - [ ] rbtree、btree、b+tree、skiplist、lru
 - [ ] tcp、udp、http
-- [ ] Selector + Channel
