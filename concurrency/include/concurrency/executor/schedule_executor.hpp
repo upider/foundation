@@ -23,10 +23,10 @@ public:
 
     bool try_execute(std::chrono::time_point<Clock> &time_point, std::shared_ptr<ExecutorTask> task);
 
-    bool try_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> task);
+    bool try_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> &&task);
 
     template <typename Rep, typename Period>
-    bool wait_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> task, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> &&task, const std::chrono::duration<Rep, Period> &wait_duration);
 
     template <typename Rep, typename Period>
     bool wait_execute(std::chrono::time_point<Clock> &time_point, std::shared_ptr<ExecutorTask> task, const std::chrono::duration<Rep, Period> &wait_duration);
@@ -36,16 +36,16 @@ public:
     bool execute(const std::chrono::duration<Rep, Period> &delay, std::shared_ptr<ExecutorTask> task);
 
     template <typename Rep, typename Period>
-    bool execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> task);
+    bool execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> &&task);
 
     template <typename Rep, typename Period>
     bool try_execute(const std::chrono::duration<Rep, Period> &delay, std::shared_ptr<ExecutorTask> task);
 
     template <typename Rep, typename Period>
-    bool try_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> task);
+    bool try_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> &&task);
 
     template <typename Rep, typename Period, typename WRep, typename WPeriod>
-    bool wait_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> task, const std::chrono::duration<WRep, WPeriod> &wait_duration);
+    bool wait_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> &&task, const std::chrono::duration<WRep, WPeriod> &wait_duration);
 
     template <typename Rep, typename Period, typename WRep, typename WPeriod>
     bool wait_execute(const std::chrono::duration<Rep, Period> &delay, std::shared_ptr<ExecutorTask> task, const std::chrono::duration<WRep, WPeriod> &wait_duration);
@@ -139,7 +139,7 @@ bool ScheduleExecutor<Clock>::try_execute(std::chrono::time_point<Clock> &time_p
 }
 
 template <typename Clock>
-bool ScheduleExecutor<Clock>::try_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> task)
+bool ScheduleExecutor<Clock>::try_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> &&task)
 {
     if (this->_phase.load() != this->RUNNING)
     {
@@ -147,14 +147,14 @@ bool ScheduleExecutor<Clock>::try_execute(std::chrono::time_point<Clock> &time_p
     }
     else
     {
-        this->_task_queue->try_push(time_point, std::make_shared<FunctionExecutorTask>(task));
+        this->_task_queue->try_push(time_point, std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)));
         return true;
     }
 }
 
 template <typename Clock>
 template <typename Rep, typename Period>
-bool ScheduleExecutor<Clock>::wait_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> task, const std::chrono::duration<Rep, Period> &wait_duration)
+bool ScheduleExecutor<Clock>::wait_execute(std::chrono::time_point<Clock> &time_point, std::function<void()> &&task, const std::chrono::duration<Rep, Period> &wait_duration)
 {
     if (this->_phase.load() != this->RUNNING)
     {
@@ -162,7 +162,7 @@ bool ScheduleExecutor<Clock>::wait_execute(std::chrono::time_point<Clock> &time_
     }
     else
     {
-        this->_task_queue->wait_push(time_point, std::make_shared<FunctionExecutorTask>(task), wait_duration);
+        this->_task_queue->wait_push(time_point, std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)), wait_duration);
         return true;
     }
 }
@@ -191,9 +191,9 @@ bool ScheduleExecutor<Clock>::execute(const std::chrono::duration<Rep, Period> &
 
 template <typename Clock>
 template <typename Rep, typename Period>
-bool ScheduleExecutor<Clock>::execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> task)
+bool ScheduleExecutor<Clock>::execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> &&task)
 {
-    return execute(Clock::now() + delay, std::make_shared<FunctionExecutorTask>(task));
+    return execute(Clock::now() + delay, std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)));
 }
 
 template <typename Clock>
@@ -205,16 +205,16 @@ bool ScheduleExecutor<Clock>::try_execute(const std::chrono::duration<Rep, Perio
 
 template <typename Clock>
 template <typename Rep, typename Period>
-bool ScheduleExecutor<Clock>::try_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> task)
+bool ScheduleExecutor<Clock>::try_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> &&task)
 {
-    return try_execute(Clock::now() + delay, std::make_shared<FunctionExecutorTask>(task));
+    return try_execute(Clock::now() + delay, std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)));
 }
 
 template <typename Clock>
 template <typename Rep, typename Period, typename WRep, typename WPeriod>
-bool ScheduleExecutor<Clock>::wait_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> task, const std::chrono::duration<WRep, WPeriod> &wait_duration)
+bool ScheduleExecutor<Clock>::wait_execute(const std::chrono::duration<Rep, Period> &delay, std::function<void()> &&task, const std::chrono::duration<WRep, WPeriod> &wait_duration)
 {
-    return try_execute(Clock::now() + delay, std::make_shared<FunctionExecutorTask>(task), wait_duration);
+    return try_execute(Clock::now() + delay, std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)), wait_duration);
 }
 
 template <typename Clock>

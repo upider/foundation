@@ -7,8 +7,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "strings/strings.hpp"
-#include "strings/ascii.hpp"
+#include "utility/strings/strings.hpp"
+#include "utility/strings/ascii.hpp"
 
 std::string Strings::to_lower(const std::string& str)
 {

@@ -33,7 +33,7 @@ public:
      * @return true 任务放入队列成功
      * @return false 任务放入队列失败
      */
-    bool execute(int priority, std::function<void()> task);
+    bool execute(int priority, std::function<void()> &&task);
     /**
      * @brief 尝试将任务放入队列
      * 
@@ -49,7 +49,7 @@ public:
      * @return true 任务放入队列成功
      * @return false 任务放入队列失败
      */
-    bool try_execute(int priority, std::function<void()> task);
+    bool try_execute(int priority, std::function<void()> &&task);
     /**
      * @brief 等待将任务放入队列, shutdown、stop或超时后, 将会失败
      * 
@@ -60,7 +60,7 @@ public:
      * @return false 任务放入队列失败
      */
     template <class Rep, class Period>
-    bool wait_execute(int priority, std::function<void()> task, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_execute(int priority, std::function<void()> &&task, const std::chrono::duration<Rep, Period> &wait_duration);
     /**
      * @brief 等待将任务放入队列, shutdown、stop或超时后, 将会失败
      * 
@@ -75,7 +75,7 @@ public:
 };
 
 template <class Rep, class Period>
-bool PriorityExecutor::wait_execute(int priority, std::function<void()> task, const std::chrono::duration<Rep, Period> &wait_duration)
+bool PriorityExecutor::wait_execute(int priority, std::function<void()> &&task, const std::chrono::duration<Rep, Period> &wait_duration)
 {
     if (_phase != RUNNING)
     {
@@ -83,7 +83,7 @@ bool PriorityExecutor::wait_execute(int priority, std::function<void()> task, co
     }
     else
     {
-        return _task_queue->wait_push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(task), priority), wait_duration);
+        return _task_queue->wait_push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)), priority), wait_duration);
     }
 }
 

@@ -30,7 +30,7 @@ public:
      * @return true 任务放入队列成功
      * @return false 任务放入队列失败
      */
-    bool execute(std::function<void()> task);
+    bool execute(std::function<void()> &&task);
     /**
      * @brief 尝试将任务放入队列
      * 
@@ -46,7 +46,7 @@ public:
      * @return true 任务放入队列成功
      * @return false 任务放入队列失败
      */
-    bool try_execute(std::function<void()> task);
+    bool try_execute(std::function<void()> &&task);
     /**
      * @brief 等待将任务放入队列, shutdown、stop或超时后, 将会失败
      * 
@@ -58,7 +58,7 @@ public:
      * @return false 任务放入队列失败
      */
     template <class Rep, class Period>
-    bool wait_execute(std::function<void()> task, const std::chrono::duration<Rep, Period> &wait_duration);
+    bool wait_execute(std::function<void()> &&task, const std::chrono::duration<Rep, Period> &wait_duration);
     /**
      * @brief 等待将任务放入队列, shutdown、stop或超时后, 将会失败
      * 
@@ -137,7 +137,7 @@ bool ThreadPoolExecutor<Queue>::execute(std::shared_ptr<ExecutorTask> task)
 }
 
 template <typename Queue>
-bool ThreadPoolExecutor<Queue>::execute(std::function<void()> task)
+bool ThreadPoolExecutor<Queue>::execute(std::function<void()> &&task)
 {
     if (this->_phase != this->RUNNING)
     {
@@ -145,7 +145,7 @@ bool ThreadPoolExecutor<Queue>::execute(std::function<void()> task)
     }
     else
     {
-        this->_task_queue->push(std::make_shared<FunctionExecutorTask>(task));
+        this->_task_queue->push(std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)));
         return true;
     }
 }
@@ -164,7 +164,7 @@ bool ThreadPoolExecutor<Queue>::try_execute(std::shared_ptr<ExecutorTask> task)
 }
 
 template <typename Queue>
-bool ThreadPoolExecutor<Queue>::try_execute(std::function<void()> task)
+bool ThreadPoolExecutor<Queue>::try_execute(std::function<void()> &&task)
 {
     if (this->_phase != this->RUNNING)
     {
@@ -172,13 +172,13 @@ bool ThreadPoolExecutor<Queue>::try_execute(std::function<void()> task)
     }
     else
     {
-        return this->_task_queue->try_push(std::make_shared<FunctionExecutorTask>(task));
+        return this->_task_queue->try_push(std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)));
     }
 }
 
 template <typename Queue>
 template <class Rep, class Period>
-bool ThreadPoolExecutor<Queue>::wait_execute(std::function<void()> task, const std::chrono::duration<Rep, Period> &wait_duration)
+bool ThreadPoolExecutor<Queue>::wait_execute(std::function<void()> &&task, const std::chrono::duration<Rep, Period> &wait_duration)
 {
     if (this->_phase != this->RUNNING)
     {
@@ -186,7 +186,7 @@ bool ThreadPoolExecutor<Queue>::wait_execute(std::function<void()> task, const s
     }
     else
     {
-        return this->_task_queue->wait_push(std::make_shared<FunctionExecutorTask>(task), wait_duration);
+        return this->_task_queue->wait_push(std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)), wait_duration);
     }
 }
 

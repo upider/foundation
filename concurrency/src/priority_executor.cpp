@@ -57,7 +57,7 @@ bool PriorityExecutor::execute(int priority, std::shared_ptr<ExecutorTask> task)
     }
 }
 
-bool PriorityExecutor::execute(int priority, std::function<void()> task)
+bool PriorityExecutor::execute(int priority, std::function<void()> &&task)
 {
     if (_phase != RUNNING)
     {
@@ -65,7 +65,7 @@ bool PriorityExecutor::execute(int priority, std::function<void()> task)
     }
     else
     {
-        _task_queue->push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(task), priority));
+        _task_queue->push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)), priority));
         return true;
     }
 }
@@ -82,7 +82,7 @@ bool PriorityExecutor::try_execute(int priority, std::shared_ptr<ExecutorTask> t
     }
 }
 
-bool PriorityExecutor::try_execute(int priority, std::function<void()> task)
+bool PriorityExecutor::try_execute(int priority, std::function<void()> &&task)
 {
     if (_phase != RUNNING)
     {
@@ -90,6 +90,6 @@ bool PriorityExecutor::try_execute(int priority, std::function<void()> task)
     }
     else
     {
-        return _task_queue->try_push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(task), priority));
+        return _task_queue->try_push(std::make_pair<>(std::make_shared<FunctionExecutorTask>(std::forward<std::function<void()>>(task)), priority));
     }
 }
