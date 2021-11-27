@@ -4,8 +4,15 @@
 #include <cstring>
 #include <cinttypes>
 
-template <typename T>
+#include "buffer/type_traits.hpp"
+
+template <typename T, typename Enable = void>
 class ByteBuffer
+{
+};
+
+template <typename T>
+class ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>
 {
 protected:
     std::size_t _widx = 0;
@@ -13,7 +20,10 @@ protected:
     std::size_t _cap = 0;
     T *_bytes = nullptr;
 
-    void recreate_bytes(std::size_t cap);
+    void recreate_data(std::size_t cap);
+
+public:
+    typedef T value_type;
 
 public:
     ByteBuffer();
@@ -23,7 +33,8 @@ public:
     ByteBuffer(std::size_t cap);
     virtual ~ByteBuffer();
 
-    ByteBuffer &operator=(const ByteBuffer &other);
+    template <typename T2>
+    ByteBuffer &operator=(const ByteBuffer<T2> &other);
     /**
      * @brief 得到容量
      * 
@@ -48,6 +59,14 @@ public:
      * @return std::string buffer内容
      */
     std::string str();
+    /**
+     * @brief 将buffer内容转换成string
+     * 
+     * @param index 起始下标
+     * @param n 元素个数
+     * @return std::string buffer内容
+     */
+    std::string str(std::size_t index, std::size_t n);
     /**
      * @brief 克隆一个新的ByteBuffer
      * 
@@ -90,25 +109,194 @@ public:
      * 
      */
     void reset();
-
-    template <typename TT>
-    std::size_t fill(const TT &ch, std::size_t len);
-    template <typename TT>
-    std::size_t fill(TT &&ch, std::size_t len);
-    template <typename TT>
-    TT read(std::size_t index);
-    template <typename TT>
-    std::size_t write(const TT &ele);
-    template <typename TT>
-    std::size_t write(TT &&ele);
-    template <typename TT>
-    std::size_t read(TT *dst, std::size_t size);
-    template <typename TT>
-    std::size_t write(TT *dst, std::size_t size);
+    /**
+     * @brief 从read index位置开始, 使用符号填充buffer
+     * 
+     * @param ch 使用的符号
+     * @param len 填充长度
+     * @return std::size_t 成功填充长度, 剩下的可写空间可能小于参数len
+     */
+    std::size_t fill(const T &ch, std::size_t len);
+    /**
+     * @brief 从read index位置开始, 使用符号填充buffer
+     * 
+     * @param ch 使用的符号
+     * @param len 填充长度
+     * @return std::size_t 成功填充长度, 剩下的可写空间可能小于参数len
+     */
+    std::size_t fill(T &&ch, std::size_t len);
+    /**
+     * @brief 获取在read index + i 位置的元素引用
+     * 
+     * @param i 要获取的位置
+     * @return T& 元素引用
+     */
+    T &operator[](std::size_t i);
+    /**
+     * @brief 从index位置读取T2类型元素, 不增加read index, 有可能读取超过可读数量的字节或者读取到buffer外内存
+     * 
+     * @tparam T2 读取元素类型, 可以是char,u_char,数字
+     * @tparam N T2大小
+     * @param index 开始位置
+     * @return T2 元素
+     */
+    template <typename T2, std::size_t N = sizeof(T2)>
+    typename is_readable<T2>::type read(std::size_t index);
+    /**
+     * @brief 从index位置读取T2类型元素, 并增加read index, 有可能读取超过可读数量的字节或读取到buffer外内存
+     * 
+     * @tparam T2 读取元素类型, 可以是char,u_char,数字
+     * @tparam N T2大小
+     * @param index 开始位置
+     * @return T2 元素
+     */
+    template <typename T2, std::size_t N = sizeof(T2)>
+    typename is_readable<T2>::type read();
+    /**
+     * @brief 写入元素到buffer指定位置, 若超过write index则增加write index, 若元素过大写到buffer外内存, 元素会被截断
+     * 
+     * @tparam T2 写入元素元素类型
+     * @param ele 要写入元素
+     * @tparam N T2大小
+     * @param index 开始位置
+     * @return std::size_t 写入字节数, 如果写入到buffer内存外的位置则可能返回小于sizeof(ele)的值
+     */
+    template <typename T2, std::size_t N = sizeof(T2)>
+    std::size_t write(const typename is_readable<T2>::type &ele, std::size_t index);
+    /**
+     * @brief 追加写入元素, 增加write index, 返回真正写入字节数, 如果元素过大导致超过buffer容量元素会被截断
+     * 
+     * @tparam T2 写入元素元素类型
+     * @tparam N 写入元素大小
+     * @param ele 要写入元素
+     * @return std::size_t 写入字节数, 如果写入到buffer内存外de位置则可能返回小于sizeof(ele)的值
+     */
+    template <typename T2, std::size_t N = sizeof(T2)>
+    std::size_t write(const typename is_readable<T2>::type &ele);
+    /**
+     * @brief 读取数据到dst, 增加read index
+     * 
+     * @tparam T2 读取元素类型, 可以是char, u_char, integral
+     * @param dst 目标地址
+     * @param size 长度
+     * @return std::size_t 读取到的长度, 可能小于指定长度
+     */
+    template <typename T2>
+    std::size_t read(typename is_readable<T2>::type *dst, std::size_t size);
+    /**
+     * @brief 追加写入元素到buffer, 最多写入可写大小
+     * 
+     * @tparam T2 元素类型
+     * @param src 内存位置
+     * @param size 写入大小
+     * @return std::size_t 真正写入大小
+     */
+    template <typename T2>
+    std::size_t write(const typename is_readable<T2>::type *src, std::size_t size);
 };
 
-template<typename T>
-void ByteBuffer<T>::recreate_bytes(std::size_t cap) 
+template <typename T>
+template <typename T2>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::write(const typename is_readable<T2>::type *src, std::size_t size)
+{
+    std::size_t wsize = writable();
+    if (size > wsize)
+    {
+        std::memcpy(_bytes + _widx, src, wsize);
+        _widx = _cap;
+        return wsize;
+    }
+    else
+    {
+        std::memcpy(_bytes + _widx, src, size);
+        _widx += size;
+        return size;
+    }
+}
+
+template <typename T>
+template <typename T2>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::read(typename is_readable<T2>::type *dst, std::size_t size)
+{
+    std::size_t rsize = readable();
+    if (size >= rsize)
+    {
+        std::memcpy(dst, _bytes + _ridx, rsize);
+        _ridx = _widx;
+        reset();
+        return rsize;
+    }
+    else
+    {
+        std::memcpy(dst, _bytes + _ridx, size);
+        _ridx += size;
+        return size;
+    }
+}
+
+template <typename T>
+template <typename T2, std::size_t N>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::write(const typename is_readable<T2>::type &ele)
+{
+    std::size_t wsize = writable();
+    if (N > wsize)
+    {
+        std::memcpy(_bytes + _widx, &ele, wsize);
+        _widx = _cap;
+        return wsize;
+    }
+    else
+    {
+        return write<T2>(&ele, N);
+    }
+}
+
+template <typename T>
+template <typename T2, std::size_t N>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::write(const typename is_readable<T2>::type &ele, std::size_t index)
+{
+    std::size_t wsize = writable();
+    if (N + index > wsize)
+    {
+        //写入位置超过可写大小, 截断写入
+        std::memcpy(_bytes + index, &ele, wsize);
+        _widx = _cap;
+        return wsize;
+    }
+    else
+    {
+        std::memcpy(_bytes + index, &ele, N);
+        _widx += N;
+        return wsize;
+    }
+}
+
+template <typename T>
+template <typename T2, std::size_t N>
+typename is_readable<T2>::type
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::read(std::size_t index)
+{
+    T2 res = (T2)(*(_bytes + _ridx + index));
+    return res;
+}
+
+template <typename T>
+template <typename T2, std::size_t N>
+typename is_readable<T2>::type
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::read()
+{
+
+    T2 res = (T2)(*(_bytes + _ridx + index));
+    _ridx += N;
+    if (_ridx > _widx)
+    {
+        _ridx = _widx;
+    }
+    return res;
+}
+
+template <typename T>
+void ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::recreate_data(std::size_t cap)
 {
     if (_bytes != nullptr)
     {
@@ -118,12 +306,12 @@ void ByteBuffer<T>::recreate_bytes(std::size_t cap)
 }
 
 template <typename T>
-ByteBuffer<T>::ByteBuffer() {}
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::ByteBuffer() {}
 
 template <typename T>
-ByteBuffer<T>::ByteBuffer(const ByteBuffer &other)
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::ByteBuffer(const ByteBuffer &other)
 {
-    recreate_bytes(other._cap);
+    recreate_data(other._cap);
     _widx = other._widx;
     _ridx = other._ridx;
     _cap = other._cap;
@@ -131,9 +319,9 @@ ByteBuffer<T>::ByteBuffer(const ByteBuffer &other)
 }
 
 template <typename T>
-ByteBuffer<T>::ByteBuffer(const T *bytes, std::size_t len)
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::ByteBuffer(const T *bytes, std::size_t len)
 {
-    recreate_bytes(len);
+    recreate_data(len);
     _ridx = 0;
     _widx = len;
     _cap = len;
@@ -141,9 +329,9 @@ ByteBuffer<T>::ByteBuffer(const T *bytes, std::size_t len)
 }
 
 template <typename T>
-ByteBuffer<T>::ByteBuffer(const T *bytes, std::size_t len, std::size_t cap)
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::ByteBuffer(const T *bytes, std::size_t len, std::size_t cap)
 {
-    recreate_bytes(cap);
+    recreate_data(cap);
     _ridx = 0;
     _widx = len;
     _cap = cap;
@@ -151,16 +339,16 @@ ByteBuffer<T>::ByteBuffer(const T *bytes, std::size_t len, std::size_t cap)
 }
 
 template <typename T>
-ByteBuffer<T>::ByteBuffer(std::size_t cap)
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::ByteBuffer(std::size_t cap)
 {
-    recreate_bytes(cap);
+    recreate_data(cap);
     _ridx = 0;
     _widx = 0;
     _cap = cap;
 }
 
 template <typename T>
-ByteBuffer<T>::~ByteBuffer()
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::~ByteBuffer()
 {
     if (_bytes != nullptr)
     {
@@ -168,72 +356,136 @@ ByteBuffer<T>::~ByteBuffer()
     }
 }
 
-template<typename T>
-ByteBuffer<T>& ByteBuffer<T>::operator=(const ByteBuffer &other) 
+template <typename T>
+template <typename T2>
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type> &
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::operator=(const ByteBuffer<T2> &other)
 {
-    recreate_bytes(other._cap);
+    recreate_data(other._cap);
     _widx = other._widx;
     _ridx = other._ridx;
     _cap = other._cap;
     std::memcpy(_bytes, other._bytes, other._cap);
 }
 
-template<typename T>
-std::size_t ByteBuffer<T>::cap() 
+template <typename T>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::cap()
 {
     return _cap;
 }
 
-template<typename T>
-std::size_t ByteBuffer<T>::writable() 
+template <typename T>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::writable()
 {
     return _cap - _widx;
 }
 
-template<typename T>
-std::size_t ByteBuffer<T>::readable() 
+template <typename T>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::readable()
 {
     return _widx - _ridx;
 }
 
-template<typename T>
-std::string ByteBuffer<T>::str() 
+template <typename T>
+std::string ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::str()
 {
-    return std::string((char*)_bytes);
+    return std::string((char *)_bytes + _ridx, (char *)_bytes + _widx);
 }
 
-template<typename T>
-ByteBuffer<T> ByteBuffer<T>::clone() 
+template <typename T>
+std::string ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::str(std::size_t index, std::size_t n)
+{
+    return std::string((char *)_bytes + index, (char *)_bytes + index + n);
+}
+
+template <typename T>
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>
+ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::clone()
 {
     return ByteBuffer(*this);
 }
 
-template<typename T>
-T* ByteBuffer<T>::data() 
+template <typename T>
+T *ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::data()
 {
     return _bytes;
 }
 
-template<typename T>
-const T* ByteBuffer<T>::const_data() const
+template <typename T>
+const T *ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::const_data() const
 {
     return _bytes;
 }
 
-template<typename T>
-void ByteBuffer<T>::discard_read_bytes() 
+template <typename T>
+void ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::discard_read_bytes()
 {
-    //TODO
-    // std::memcpy(_bytes, );
+    std::memmove(_bytes, _bytes + _ridx, readable());
+    _ridx = 0;
+    _widx -= _ridx;
 }
 
-template<typename T>
-void ByteBuffer<T>::reset(const T *bytes, std::size_t len, std::size_t cap) 
+template <typename T>
+void ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::reset(const T *bytes, std::size_t len, std::size_t cap)
 {
-    recreate_bytes(cap);
+    recreate_data(cap);
     _widx = len;
     _ridx = 0;
+    _cap = cap;
     std::memcpy(_bytes, bytes, cap);
+}
+
+template <typename T>
+void ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::reset(const T *bytes, std::size_t len)
+{
+    recreate_data(len);
+    _widx = len;
+    _ridx = 0;
+    _cap = len;
+    std::memcpy(_bytes, bytes, len);
+}
+
+template <typename T>
+void ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::reset()
+{
+    _widx = 0;
+    _ridx = 0;
+}
+
+template <typename T>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::fill(const T &ch, std::size_t len)
+{
+    std::size_t res = writable();
+    if (len < res)
+    {
+        res = len;
+    }
+
+    std::fill_n(_bytes + _widx, res, ch);
+    _widx += res;
+
+    return res;
+}
+
+template <typename T>
+std::size_t ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::fill(T &&ch, std::size_t len)
+{
+    std::size_t res = writable();
+    if (len < res)
+    {
+        res = len;
+    }
+
+    std::fill_n(_bytes + _widx, res, ch);
+    _widx += res;
+
+    return res;
+}
+
+template <typename T>
+T &ByteBuffer<T, typename std::enable_if<sizeof(T) == 1>::type>::operator[](std::size_t index)
+{
+    return _bytes[_ridx + index];
 }
 
 #endif /* __BYTE_BUFFER_HPP__ */
