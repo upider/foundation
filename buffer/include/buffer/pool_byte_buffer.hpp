@@ -5,13 +5,12 @@
 #include <thread>
 
 #include "buffer/byte_buffer.hpp"
-#include "byte/byte.hpp"
 #include "pool/constant.hpp"
 
 class PoolByteBufferAllocator;
 class PageHeap;
 
-class PoolByteBuffer : public ByteBuffer<Byte>
+class PoolByteBuffer
 {
 private:
     PoolByteBufferAllocator &_pbba;

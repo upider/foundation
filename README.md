@@ -48,7 +48,8 @@
 
 ## TODO
 
-- [ ] byte buffer
+- [ ] byte buffer alloctor
+- [ ] pool byte buffer
 - [ ] Selector + Channel
 - [ ] HeapTimer
 - [ ] WheelTimer
