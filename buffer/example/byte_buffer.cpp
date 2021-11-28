@@ -15,7 +15,7 @@ int main(int argc, char const *argv[])
     bb[4] = to_byte('c');
     bb.write<int>(100, 0);
     bb.write<double>(3, 4);
-    std::cout << bb.str() << std::endl;
+    std::cout << bb.to_str() << std::endl;
     std::cout << bb.read<int>(0) << std::endl;
     std::cout << bb.read<int>() << std::endl;
     std::cout << bb.read<int>() << std::endl;

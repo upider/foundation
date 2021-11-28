@@ -25,7 +25,7 @@ int main(int argc, char const *argv[])
 
     auto task = [&blocks]()
     {
-        PageHeap allocator;
+        PageHeap<Byte> allocator;
         for (size_t i = 0; i < 30 * 1000 * 1000; i++)
         {
             for (auto idx : blocks)

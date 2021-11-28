@@ -63,7 +63,7 @@ public:
      * 
      * @return std::string buffer内容
      */
-    std::string str();
+    std::string to_str();
     /**
      * @brief 将buffer内容转换成string
      * 
@@ -296,7 +296,7 @@ std::size_t BasicByteBuffer<T, Alloc, typename std::enable_if<sizeof(T) == 1>::t
 }
 
 template <typename T, typename Alloc>
-std::string BasicByteBuffer<T, Alloc, typename std::enable_if<sizeof(T) == 1>::type>::str()
+std::string BasicByteBuffer<T, Alloc, typename std::enable_if<sizeof(T) == 1>::type>::to_str()
 {
     return std::string((char *)_bytes + _ridx, (char *)_bytes + _widx);
 }

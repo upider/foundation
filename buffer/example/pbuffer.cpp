@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
     // signal(SIGSEGV, handler);
     // signal(SIGABRT, handler);
 
-    size_t numThreads = 110;
+    size_t numThreads = 3;
     std::size_t N = 1000*10;
     int blocks[] = {128, 1024, 2048, 4096};
     std::condition_variable_any cva;
@@ -35,7 +35,9 @@ int main(int argc, char const *argv[])
         {
             NullMutex lock;
             cva.wait(lock);
-            // PoolByteBuffer buf2(blocks[2]);
+            PoolByteBuffer buf2(blocks[2]);
+            buf2.write<long int>(100);
+            std::cout << buf2.to_str() << std::endl;
         }
         auto t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<int64_t, std::nano> diff = t2 - t1;

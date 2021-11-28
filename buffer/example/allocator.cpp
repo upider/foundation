@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "stack_trace/stack_trace.hpp"
+#include "byte/byte.hpp"
 #include "pool/size_class.hpp"
 #include "pool/pool_byte_buffer_allocator.hpp"
 
@@ -23,7 +24,7 @@ int main(int argc, char const *argv[])
     // auto blocks = {128};
     auto blocks = {6, 10, 11};
     auto threads = std::vector<std::thread *>(numThreads);
-    auto& allocator = PoolByteBufferAllocator::instance();
+    auto allocator = PoolByteBufferAllocator<Byte>();
 
     auto task = [&allocator, &blocks]()
     {
