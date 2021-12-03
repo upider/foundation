@@ -10,6 +10,7 @@ public:
     ExecutorTask();
     ~ExecutorTask();
 
+    //TODO: run改为operator()
     virtual void run() = 0;
 };
 
