@@ -10,8 +10,8 @@ auto SOCKETOPS = EPOLLONESHOT | Selectable::OP::READ | Selectable::OP::REMOTE_CL
 
 int main(int argc, char const *argv[])
 {
-    std::vector<Selected> vec;
-    Selector selector;
+    std::vector<Selected<int>> vec;
+    Selector<int> selector;
     auto server_socket = Socket::stream_socket();
 
     //bind 应该在 add之前
