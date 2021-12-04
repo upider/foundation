@@ -22,6 +22,7 @@ Selectable::OperationCollection Selected::operation()
 
 void Selected::release()
 {
+    _selector->remove(*_selectable);
     _selectable->close();
     delete _selectable;
     _selectable = nullptr;

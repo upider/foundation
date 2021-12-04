@@ -17,10 +17,9 @@ Selectable::Selectable() {}
 Selectable::Selectable(const native_handle_type &h, Type t, bool non_block)
     : _native_handle(h), _type(t), _non_block(non_block)
 {
-    if(h < 0)
+    if (h < 0)
     {
         _closed = true;
-        return;
     }
     if (non_block)
     {
@@ -46,15 +45,15 @@ Selectable::OperationCollection Selectable::valid_operations()
     {
     case SERVER_STREAM_SOCKET:
     {
-        return OP_READ | OP_ONESHOT | OP_EXCEPT;
+        return READ | WRITE | EXCEPT;
     }
     case STREAM_SOCKET:
     {
-        return OP_READ | OP_WRITE | OP_REMOTECLOSE | OP_ONESHOT | OP_EXCEPT;
+        return READ | WRITE | REMOTE_CLOSE | EXCEPT;
     }
     case DATAGRAM_SOCKET:
     {
-        return OP_READ | OP_WRITE | OP_REMOTECLOSE | OP_ONESHOT | OP_EXCEPT;
+        return READ | WRITE | EXCEPT;
     }
     default:
         return 0;
@@ -101,16 +100,16 @@ void Selectable::shutdown(OperationCollection ops)
     {
         return;
     }
-    if ((ops & Operation::OP_READ) && (ops & Operation::OP_WRITE))
+    if ((ops & Operation::READ) && (ops & Operation::WRITE))
     {
         ::shutdown(_native_handle, SHUT_RDWR);
         return;
     }
-    else if (ops & Operation::OP_READ)
+    else if (ops & Operation::READ)
     {
         ::shutdown(_native_handle, SHUT_RD);
     }
-    else if (ops & Operation::OP_WRITE)
+    else if (ops & Operation::WRITE)
     {
         ::shutdown(_native_handle, SHUT_WR);
     }
@@ -121,9 +120,9 @@ bool Selectable::operator==(const Selectable &selectable)
     return (_type == selectable._type) && (_native_handle == selectable._native_handle);
 }
 
-bool Selectable::closed() 
+bool Selectable::closed()
 {
-    return _closed;    
+    return _closed;
 }
 
 Selectable Selectable::open_stream_socket(bool non_block)
@@ -137,7 +136,7 @@ Selectable Selectable::open_stream_socket(bool non_block)
     return Selectable(fd, STREAM_SOCKET, non_block);
 }
 
-Selectable Selectable::open_server_stream_socket(bool non_block)
+Selectable Selectable::open_sstream_socket(bool non_block)
 {
     int fd = -1;
     if ((fd = ::socket(AF_INET, SOCK_STREAM, 0)) < 0)

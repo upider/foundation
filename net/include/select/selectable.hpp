@@ -14,11 +14,11 @@ public:
     typedef uint32_t OperationCollection;
     enum Operation
     {
-        OP_READ = EPOLLIN,
-        OP_WRITE = EPOLLOUT,
-        OP_ONESHOT = EPOLLONESHOT,
-        OP_REMOTECLOSE = EPOLLRDHUP,
-        OP_EXCEPT = EPOLLHUP|EPOLLERR
+        READ = EPOLLIN | EPOLLONESHOT,
+        WRITE = EPOLLOUT | EPOLLONESHOT,
+        // OP_ONESHOT = EPOLLONESHOT,
+        REMOTE_CLOSE = EPOLLRDHUP,
+        EXCEPT = EPOLLHUP | EPOLLERR
     };
 
     enum Type
@@ -28,7 +28,7 @@ public:
         DATAGRAM_SOCKET,
     };
 
-    Selectable(const Selectable& other);
+    Selectable(const Selectable &other);
     ~Selectable();
     const Type type() const;
     const native_handle_type native_handle() const;
@@ -40,16 +40,16 @@ public:
      */
     void close();
     /**
-     * @brief 停止Selectable一种或多种操作(OP_READ | OP_WRITE | OP_ACCEPT)
+     * @brief 停止Selectable一种或多种操作(OP_READ | OP_WRITE)
      * 
      * @param ops 要停止的操作
      */
     void shutdown(OperationCollection ops);
-    bool operator==(const Selectable& selectable);
+    bool operator==(const Selectable &selectable);
     bool closed();
 
     static Selectable open_stream_socket(bool non_block = true);
-    static Selectable open_server_stream_socket(bool non_block = true);
+    static Selectable open_sstream_socket(bool non_block = true);
     static Selectable open_datagram_socket(bool non_block = true);
     template <typename Rep, typename Period>
     static Selectable open_timer(const std::chrono::duration<Rep, Period> &duration, bool non_block = true);
@@ -60,7 +60,7 @@ private:
     bool _non_block;
     bool _closed = false;
     Selectable();
-    Selectable(const native_handle_type& h, Type t, bool non_block);
+    Selectable(const native_handle_type &h, Type t, bool non_block);
 };
 
 #endif /* __SELECTABLE_HPP__ */

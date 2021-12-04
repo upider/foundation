@@ -63,21 +63,6 @@ private:
      */
     void remove(const Selectable &selectable);
     void delete_event(epoll_event *ev);
-    /**
-     * @brief Selectable::Operaton转换为uint32_t
-     * 
-     * @param ops Selectable::Operaton集合
-     * @return uint32_t 
-     */
-    Selectable::OperationCollection op_to_num(uint32_t ops);
-    /**
-     * @brief uint32_t转为Selectable::Operaton
-     * 
-     * @param st Selectable
-     * @param what 数字
-     * @return uint32_t Selectable::Operaton
-     */
-    Selectable::OperationCollection num_to_op(Selectable &st, Selectable::OperationCollection what);
     epoll_event _events[SELECTOR_MAX_EVENTS];
     native_handle_type _native_handler;
 };
@@ -96,7 +81,7 @@ std::size_t Selector::select(Container &container, const std::chrono::duration<R
     for (int i; i < ret; i++)
     {
         Selectable *st = reinterpret_cast<Selectable *>(_events[i].data.ptr);
-        container.push_back(Selected(this, st, num_to_op(*st, _events[i].events)));
+        container.push_back(Selected(this, st, _events[i].events));
     }
     return ret;
 }
