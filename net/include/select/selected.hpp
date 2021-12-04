@@ -4,28 +4,29 @@
 #include "select/selectable.hpp"
 
 class Selector;
+class Socket;
 
 class Selected
 {
 private:
     Selector *_selector;
-    Selectable *_selectable;
-    Selectable::OperationCollection _op;
+    Socket *_selectable;
+    Selectable::OPCollection _op;
 
 private:
     friend class Selector;
-    Selected(Selector *selector, Selectable *selectable, Selectable::OperationCollection op);
+    Selected(Selector *selector, Socket *selectable, Selectable::OPCollection op);
 
 public:
     ~Selected();
     Selector& selector();
-    Selectable& selectable();
+    Socket& selectable();
     /**
      * @brief 返回可执行的Selectable操作集合
      * 
      * @return Selectable::OperationCollection 可执行操作集合
      */
-    Selectable::OperationCollection operation();
+    Selectable::OPCollection operation();
     /**
      * @brief 释放持有的Selectable对象并回收相应资源
      */
@@ -35,7 +36,7 @@ public:
      * 
      * @param ops 监听的selectable操作集合
      */
-    void select(Selectable::OperationCollection ops);
+    void select(Selectable::OPCollection ops);
 };
 
 #endif /* __SELECTED_HPP__ */

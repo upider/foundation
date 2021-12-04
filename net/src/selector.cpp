@@ -29,12 +29,12 @@ Selector::native_handle_type Selector::native_handle()
     return _native_handler;
 }
 
-void Selector::add(const Selectable &selectable, Selectable::OperationCollection ops)
+void Selector::add(const Socket &selectable, Selectable::OPCollection ops)
 {
-    return add(new Selectable(selectable), ops);
+    return add(new Socket(selectable), ops);
 }
 
-void Selector::add(Selectable *selectable, Selectable::OperationCollection ops)
+void Selector::add(Socket *selectable, Selectable::OPCollection ops)
 {
     struct epoll_event ev;
     ev.events = ops;
@@ -45,7 +45,7 @@ void Selector::add(Selectable *selectable, Selectable::OperationCollection ops)
     }
 }
 
-void Selector::mod(Selectable *selectable, Selectable::OperationCollection ops) 
+void Selector::mod(Socket *selectable, Selectable::OPCollection ops) 
 {
     struct epoll_event ev;
     ev.events = ops;
@@ -56,7 +56,7 @@ void Selector::mod(Selectable *selectable, Selectable::OperationCollection ops)
     }
 }
 
-void Selector::remove(const Selectable &selectable)
+void Selector::remove(const Socket &selectable)
 {
     struct epoll_event *ev = NULL;
     if (epoll_ctl(_native_handler, EPOLL_CTL_DEL, selectable.native_handle(), ev) == -1)

@@ -3,24 +3,25 @@
 #include <vector>
 
 #include "select/selector.hpp"
-#include "acceptor/acceptor.hpp"
+#include "address/address.hpp"
 
-auto SERVERSOCKETOPS = Selectable::Operation::READ | Selectable::Operation::EXCEPT;
-auto SOCKETOPS = Selectable::Operation::READ | Selectable::Operation::REMOTE_CLOSE | Selectable::Operation::EXCEPT;
+auto SERVERSOCKETOPS = EPOLLONESHOT | Selectable::OP::READ | Selectable::OP::EXCEPT;
+auto SOCKETOPS = EPOLLONESHOT | Selectable::OP::READ | Selectable::OP::REMOTE_CLOSE | Selectable::OP::EXCEPT;
 
 int main(int argc, char const *argv[])
 {
     std::vector<Selected> vec;
     Selector selector;
-    auto server_socket = Selectable::open_sstream_socket();
+    auto server_socket = Socket::stream_socket();
 
+    //bind 应该在 add之前
+    server_socket.bind("192.168.37.204", 8888);
     selector.add(server_socket, SERVERSOCKETOPS);
-    Acceptor::bind(server_socket, 8888);
 
     std::thread t([&]()
                   {
                       std::this_thread::sleep_for(std::chrono::seconds(1));
-                      //   server_socket.shutdown(Selectable::Operation::OP_READ);
+                      //   server_socket.shutdown(Selectable::OP::OP_READ);
                       //   server_socket.close();
                   });
 
@@ -32,56 +33,52 @@ int main(int argc, char const *argv[])
         {
             auto ops = vec[i].operation();
             auto selectable = vec[i].selectable();
-            if (ops & Selectable::Operation::EXCEPT)
+            if (ops & Selectable::OP::EXCEPT)
             {
                 std::cout << "exception occured" << std::endl;
                 std::cout << "Selectable == " << selectable.native_handle() << std::endl;
                 std::cout << "ops == " << ops << std::endl;
                 vec[i].release();
-                if(selectable.type() == Selectable::Type::SERVER_STREAM_SOCKET)
+                if (selectable.acceptable())
                 {
                     std::cout << "SERVER_STREAM_SOCKET close, return" << std::endl;
                     return 0;
                 }
             }
-            else if (ops & Selectable::Operation::REMOTE_CLOSE)
+            else if (ops & Selectable::OP::REMOTE_CLOSE)
             {
-                std::cout << "remote close" << std::endl;
-                std::cout << "Selectable == " << selectable.native_handle() << std::endl;
+                std::cout << "remote close, " << selectable.remote_addr().to_string() << std::endl;
                 vec[i].release();
             }
-            else if (ops & Selectable::Operation::READ)
+            else if (ops & Selectable::OP::READ)
             {
-                std::cout << "can read" << std::endl;
-                std::cout << "Selectable == " << selectable.native_handle() << std::endl;
-                if (selectable.type() == Selectable::Type::SERVER_STREAM_SOCKET)
+                if (selectable.acceptable())
                 {
-                    auto new_socket = Acceptor::accept(selectable);
-                    if (new_socket.closed())
+                    std::cout << "can accept" << std::endl;
+                    auto new_socket = selectable.accept();
+                    if (!new_socket.closed())
                     {
-                        continue;
+                        selector.add(new_socket, SOCKETOPS);
+                        std::cout << "remote connect, " << new_socket.remote_addr().to_string() << std::endl;
                     }
-                    selector.add(new_socket, SOCKETOPS);
-                    std::cout << "add new Selectable" << std::endl;
                     vec[i].select(SERVERSOCKETOPS);
                 }
                 else
                 {
+                    std::cout << "can read" << std::endl;
                     char buf[50]{};
-                    ::recv(selectable.native_handle(), buf, 50, MSG_DONTWAIT);
+                    selectable.read(buf, 50);
                     std::cout << "receive message: " << buf << std::endl;
                     vec[i].select(SOCKETOPS);
                 }
             }
-            else if (ops & Selectable::Operation::WRITE)
+            else if (ops & Selectable::OP::WRITE)
             {
                 std::cout << "can write" << std::endl;
-                std::cout << "Selectable == " << selectable.native_handle() << std::endl;
             }
             else
             {
                 std::cout << "unknown event" << std::endl;
-                std::cout << "Selectable == " << selectable.native_handle() << std::endl;
                 std::cout << "ops == " << ops << std::endl;
             }
         }

@@ -1,8 +1,9 @@
 #include "select/selector.hpp"
 #include "select/selected.hpp"
+#include "socket/socket.hpp"
 
-Selected::Selected(Selector *selector, Selectable *selectable, Selectable::OperationCollection op)
-    :  _selector(selector), _selectable(selectable),_op(op) {}
+Selected::Selected(Selector *selector, Socket *selectable, Selectable::OPCollection op)
+    :  _selector(selector), _selectable(selectable), _op(op) {}
 
 Selected::~Selected() {}
 
@@ -11,11 +12,12 @@ Selector& Selected::selector()
     return *_selector;    
 }
 
-Selectable& Selected::selectable()
+Socket& Selected::selectable()
 {
     return *_selectable;
 }
-Selectable::OperationCollection Selected::operation()
+
+Selectable::OPCollection Selected::operation()
 {
     return _op;
 }
@@ -28,7 +30,7 @@ void Selected::release()
     _selectable = nullptr;
 }
 
-void Selected::select(Selectable::OperationCollection ops) 
+void Selected::select(Selectable::OPCollection ops) 
 {
     _selector->mod(_selectable, ops);
 }
