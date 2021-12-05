@@ -44,11 +44,18 @@
 
 ## buffer
 
-- [x] buffer pool(lock free)
+- [x] Byte
+- [x] PoolByteBuffer (lock free)
+
+## net
+
+- [X] Selector
+- [X] Socket
+- [X] Address
 
 ## TODO
 
-- [ ] Selector + Channel
+- [ ] Reactor
 - [ ] HeapTimer
 - [ ] WheelTimer
 - [ ] HierarchicalWheelTimer
