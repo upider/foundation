@@ -5,8 +5,8 @@
 #include <thread>
 
 #include "buffer/byte_buffer.hpp"
-#include "pool/constant.hpp"
-#include "pool/pool_byte_buffer_allocator.hpp"
+#include "buffer/pool/constant.hpp"
+#include "buffer/pool/pool_byte_buffer_allocator.hpp"
 
 typedef BasicByteBuffer<Byte, PoolByteBufferAllocator<Byte>> PoolByteBuffer;
 

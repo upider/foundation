@@ -1,4 +1,4 @@
-#include "byte/byte.hpp"
+#include "buffer/byte.hpp"
 
 Byte& operator|=(Byte& lhs, Byte rhs) noexcept {
   return lhs = lhs | rhs;

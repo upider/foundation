@@ -3,9 +3,9 @@
 
 #include <memory>
 
-#include "pool/thread_page_heap.hpp"
-#include "pool/page_heap.hpp"
-#include "pool/size_class.hpp"
+#include "buffer/pool/thread_page_heap.hpp"
+#include "buffer/pool/page_heap.hpp"
+#include "buffer/pool/size_class.hpp"
 
 template <typename T>
 class PoolByteBufferAllocator

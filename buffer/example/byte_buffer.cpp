@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "byte/byte.hpp"
+#include "buffer/byte.hpp"
 #include "buffer/byte_buffer.hpp"
 
 int main(int argc, char const *argv[])

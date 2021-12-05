@@ -4,7 +4,7 @@
 #include <thread>
 #include <vector>
 
-#include "byte/byte.hpp"
+#include "buffer/byte.hpp"
 
 class Helper
 {

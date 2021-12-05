@@ -5,7 +5,7 @@
 #include <cinttypes>
 #include <memory>
 
-#include "byte/byte.hpp"
+#include "buffer/byte.hpp"
 #include "buffer/type_traits.hpp"
 
 template <typename T, typename Alloc, typename Enable = void>

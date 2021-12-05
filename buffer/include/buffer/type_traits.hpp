@@ -1,7 +1,7 @@
 #ifndef __TYPE_TRAITS_HPP__
 #define __TYPE_TRAITS_HPP__
 
-#include "byte/byte.hpp"
+#include "buffer/byte.hpp"
 
 template <typename T, typename Enable = void>
 struct is_readable

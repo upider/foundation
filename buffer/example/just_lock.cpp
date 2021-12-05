@@ -6,7 +6,7 @@
 #include <vector>
 #include <mutex>
 
-#include "byte/byte.hpp"
+#include "buffer/byte.hpp"
 #include "concurrency/timer/time_ticker.hpp"
 
 class Helper

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <thread>
 
-#include "pool/page_heap.hpp"
+#include "buffer/pool/page_heap.hpp"
 #include "stack_trace/stack_trace.hpp"
 
 void handler(int)

@@ -1,7 +1,7 @@
 #include <cinttypes>
 #include <cmath>
 
-#include "pool/size_class.hpp"
+#include "buffer/pool/size_class.hpp"
 
 SizeClass::SizeClass()
 {

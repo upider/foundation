@@ -6,9 +6,9 @@
 #include <vector>
 
 #include "stack_trace/stack_trace.hpp"
-#include "byte/byte.hpp"
-#include "pool/size_class.hpp"
-#include "pool/pool_byte_buffer_allocator.hpp"
+#include "buffer/byte.hpp"
+#include "buffer/pool/size_class.hpp"
+#include "buffer/pool/pool_byte_buffer_allocator.hpp"
 
 void handler(int)
 {

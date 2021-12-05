@@ -5,8 +5,8 @@
 #include <atomic>
 #include <cinttypes>
 
-#include "byte/byte.hpp"
-#include "pool/constant.hpp"
+#include "buffer/byte.hpp"
+#include "buffer/pool/constant.hpp"
 
 template<typename T>
 class PageHeap

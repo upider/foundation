@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "pool/constant.hpp"
+#include "buffer/pool/constant.hpp"
 
 class SizeClass
 {

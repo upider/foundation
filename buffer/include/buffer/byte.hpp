@@ -74,4 +74,4 @@ auto from_bytes(T* dst, const Byte* src, std::size_t count) -> typename std::ena
   static_cast<void>(std::memcpy(dst, src, count * sizeof(Byte)));
 }
 
-#endif // __BYTE_HPP__
+#endif /* __BYTE_HPP__ */
