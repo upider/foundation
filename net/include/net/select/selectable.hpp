@@ -9,9 +9,6 @@
 class Selectable
 {
 public:
-    Selectable();
-    ~Selectable();
-
     typedef int native_handle_type;
     typedef uint32_t OPCollection;
     enum OP

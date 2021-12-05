@@ -1,7 +1,7 @@
 #ifndef __SELECTED_HPP__
 #define __SELECTED_HPP__
 
-#include "select/selectable.hpp"
+#include "net/select/selectable.hpp"
 
 template <typename T>
 class Selector;

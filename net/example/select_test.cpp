@@ -2,8 +2,8 @@
 #include <thread>
 #include <vector>
 
-#include "select/selector.hpp"
-#include "address/address.hpp"
+#include "net/select/selector.hpp"
+#include "net/address.hpp"
 
 auto SERVERSOCKETOPS = EPOLLONESHOT | Selectable::OP::READ | Selectable::OP::EXCEPT;
 auto SOCKETOPS = EPOLLONESHOT | Selectable::OP::READ | Selectable::OP::REMOTE_CLOSE | Selectable::OP::EXCEPT;

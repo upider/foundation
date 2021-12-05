@@ -9,9 +9,9 @@
 #include <chrono>
 #include <stdexcept>
 
-#include "select/selected.hpp"
-#include "select/selectable.hpp"
-#include "socket/socket.hpp"
+#include "net/select/selected.hpp"
+#include "net/select/selectable.hpp"
+#include "net/socket.hpp"
 
 constexpr int SELECTOR_MAX_EVENTS = 1024;
 

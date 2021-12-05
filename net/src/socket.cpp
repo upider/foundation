@@ -7,8 +7,8 @@
 #include <cerrno>
 #include <stdexcept>
 
-#include "address/address.hpp"
-#include "socket/socket.hpp"
+#include "net/address.hpp"
+#include "net/socket.hpp"
 
 Socket::Socket() {}
 
