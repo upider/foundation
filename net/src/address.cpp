@@ -1,34 +1,36 @@
+#include "net/protocol.hpp"
 #include "net/address.hpp"
 
-Address::Address(const std::string &ip, int port)
-    : _ip(ip), _port(port) {}
-
-Address::Address() {}
-Address::~Address() {}
-
-std::string Address::to_string()
+namespace net
 {
-    std::string str;
-    str.append(_ip).append(":").append(std::to_string(_port));
-    return str;
-}
+    Address::Address(const std::string &ip, uint16_t port) : _ip(ip), _port(port) {}
+    Address::Address(uint16_t port) : _port(port) {}
+    Address::~Address() {}
 
-std::string Address::ip()
-{
-    return _ip;
-}
+    std::string Address::to_string()
+    {
+        std::string str;
+        str.append(_ip).append(":").append(std::to_string(_port));
+        return str;
+    }
 
-int Address::port()
-{
-    return _port;
-}
+    std::string Address::ip()
+    {
+        return _ip;
+    }
 
-void Address::ip(const std::string &ip)
-{
-    _ip = ip;
-}
+    uint16_t Address::port()
+    {
+        return _port;
+    }
 
-void Address::port(int port)
-{
-    _port = port;
-}
+    void Address::ip(const std::string &ip)
+    {
+        _ip = ip;
+    }
+
+    void Address::port(uint16_t port)
+    {
+        _port = port;
+    }
+} // namespace net
