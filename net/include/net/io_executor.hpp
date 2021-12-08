@@ -1,15 +1,20 @@
 #ifndef __IO_EXECUTOR_HPP__
 #define __IO_EXECUTOR_HPP__
 
+#include <memory>
+
+#include "net/select/selectable.hpp"
+
 namespace net
 {
+    class IOTask;
     class IOExecutor
     {
-    private:
-        /* data */
     public:
-        IOExecutor(/* args */) {}
-        ~IOExecutor() {}
+        IOExecutor();
+        ~IOExecutor();
+
+        void push(std::shared_ptr<IOTask> task);
     };
 
 } // namespace net

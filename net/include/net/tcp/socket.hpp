@@ -1,5 +1,5 @@
-#ifndef __SOCKET_HPP__
-#define __SOCKET_HPP__
+#ifndef __TCP_SOCKET_HPP__
+#define __TCP_SOCKET_HPP__
 
 #include <functional>
 
@@ -28,12 +28,13 @@ namespace net
         private:
             bool _non_blocking{true};
             bool _open{true};
-            native_handle_type _native_handle;
+            native_handle_type _native_handle{-1};
             Protocol* _protocol;
             Address *_remote_address;
 
         public:
             Socket();
+            Socket(const Socket&) = delete;
             explicit Socket(const ProtocolV4& protocol, const Address &remote);
             explicit Socket(const ProtocolV6& protocol, const Address &remote);
             ~Socket();
@@ -57,4 +58,4 @@ namespace net
     } // namespace tcp
 } // namespace net
 
-#endif /* __SOCKET_HPP__ */
+#endif /* __TCP_SOCKET_HPP__ */

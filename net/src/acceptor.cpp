@@ -20,6 +20,53 @@ namespace net
 {
     namespace tcp
     {
+        /*****************Acceptor::AcceptorIOTask************************/
+        Acceptor::AcceptorIOTask::AcceptorIOTask(Acceptor *acceptor) : _acceptor(acceptor) {}
+
+        Acceptor::AcceptorIOTask::AcceptorIOTask(Acceptor *acceptor, std::function<void(const NetException &except, Socket &)> &&callback)
+            : _acceptor(acceptor), _callback(std::forward<std::function<void(const NetException &except, Socket &)>>(callback)) {}
+
+        Acceptor::AcceptorIOTask::~AcceptorIOTask() {}
+                
+        void Acceptor::AcceptorIOTask::operator()(Selectable::OPCollection ops)
+        {
+            if (ops & Selectable::OP::READ)
+            {
+                Socket socket;
+                _acceptor->accept(socket);
+                if (socket.native_handle() == -1)
+                {
+                    NetException err;
+                    this->_callback(err, socket);
+                }
+                else
+                {
+                    NetException err(errno, strerror(errno));
+                    this->_callback(err, socket);
+                }
+            }
+            else if (ops & Selectable::OP::EXCEPT)
+            {
+                _acceptor->close();
+            }
+        }
+
+        Selectable::OPCollection Acceptor::AcceptorIOTask::interest()
+        {
+            return Selectable::OP::EXCEPT | Selectable::OP::READ;
+        }
+
+        Selectable::native_handle_type Acceptor::AcceptorIOTask::native_handle()
+        {
+            return _acceptor->native_handle();
+        }
+
+        bool Acceptor::AcceptorIOTask::oneshot() 
+        {
+            return false;    
+        }
+
+        /*****************Acceptor************************/
         Acceptor::Acceptor(const ProtocolV4 &protocol, const Address &addr) : _protocol(new ProtocolV4(protocol)), _address(new Address(addr))
         {
             _native_handle = ::socket(_protocol->family(), _protocol->type(), _protocol->protocol());
@@ -40,16 +87,16 @@ namespace net
             delete _address;
         }
 
-        bool Acceptor::operator==(const Acceptor &other)
+        const Protocol &Acceptor::protocol() const
         {
-            return bool(_native_handle == other._native_handle);
+            return *_protocol;
         }
 
-        const Protocol& Acceptor::protocol() const
+        Acceptor::native_handle_type Acceptor::native_handle()
         {
-            return *_protocol;    
+            return _native_handle;
         }
-        
+
         const Address &Acceptor::local_address() const
         {
             return *_address;
@@ -119,8 +166,10 @@ namespace net
             return;
         }
 
-        void Acceptor::accept(Socket &socket, IOExecutor &executor, std::function<void(const NetException &except)> &&cb)
+        void Acceptor::accept(IOExecutor &executor, std::function<void(const NetException &, Socket &)> &&callback)
         {
+            std::shared_ptr<IOTask> task = std::make_shared<AcceptorIOTask>(this, std::forward<std::function<void(const NetException &, Socket &)>>(callback));
+            executor.push(task);
         }
 
     } // namespace tcp

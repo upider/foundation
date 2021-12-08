@@ -12,12 +12,13 @@ namespace net
         uint16_t _code{0};
 
     public:
-        NetException(const std::string& message);
+        NetException(const std::string& message = "");
         NetException(uint16_t code, const std::string& message);
         NetException(uint16_t code);
         ~NetException();
 
         uint16_t code() const noexcept;
+        bool empty();
     };
 
 } // namespace net

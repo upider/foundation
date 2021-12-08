@@ -6,25 +6,28 @@
 #include <cinttypes>
 #include <chrono>
 
-class Selectable
+namespace net
 {
-public:
-    typedef int native_handle_type;
-    typedef uint32_t OPCollection;
-    enum OP
+    class Selectable
     {
-        READ = EPOLLIN | EPOLLONESHOT,
-        WRITE = EPOLLOUT | EPOLLONESHOT,
-        REMOTE_CLOSE = EPOLLRDHUP,
-        EXCEPT = EPOLLHUP | EPOLLERR
-    };
+    public:
+        typedef int native_handle_type;
+        typedef uint32_t OPCollection;
+        enum OP
+        {
+            READ = EPOLLIN | EPOLLONESHOT,
+            WRITE = EPOLLOUT | EPOLLONESHOT,
+            REMOTE_CLOSE = EPOLLRDHUP,
+            EXCEPT = EPOLLHUP | EPOLLERR
+        };
 
-    enum TYPE
-    {
-        SERVER_STREAM_SOCKET,
-        STREAM_SOCKET,
-        DATAGRAM_SOCKET,
+        enum TYPE
+        {
+            SERVER_STREAM_SOCKET,
+            STREAM_SOCKET,
+            DATAGRAM_SOCKET,
+        };
     };
-};
+} // namespace net
 
 #endif /* __SELECTABLE_HPP__ */
