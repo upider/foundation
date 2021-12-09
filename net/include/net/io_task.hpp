@@ -7,6 +7,7 @@
 
 namespace net
 {
+    using namespace select;
     class IOTask
     {
     public:
@@ -15,7 +16,6 @@ namespace net
         virtual void operator()(Selectable::OPCollection ops) = 0;
         virtual Selectable::OPCollection interest() = 0;
         virtual Selectable::native_handle_type native_handle() = 0;
-        virtual bool oneshot() = 0;
     };
 
 } // namespace net

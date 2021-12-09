@@ -21,28 +21,26 @@ namespace net
     namespace tcp
     {
         /*****************Acceptor::AcceptorIOTask************************/
-        Acceptor::AcceptorIOTask::AcceptorIOTask(Acceptor *acceptor) : _acceptor(acceptor) {}
-
-        Acceptor::AcceptorIOTask::AcceptorIOTask(Acceptor *acceptor, std::function<void(const NetException &except, Socket &)> &&callback)
-            : _acceptor(acceptor), _callback(std::forward<std::function<void(const NetException &except, Socket &)>>(callback)) {}
+        Acceptor::AcceptorIOTask::AcceptorIOTask(Acceptor *acceptor, std::function<void(Socket &, const NetException &except)> &&callback)
+            : _acceptor(acceptor), _callback(std::forward<std::function<void(Socket &, const NetException &except)>>(callback)) {}
 
         Acceptor::AcceptorIOTask::~AcceptorIOTask() {}
-                
+
         void Acceptor::AcceptorIOTask::operator()(Selectable::OPCollection ops)
         {
             if (ops & Selectable::OP::READ)
             {
                 Socket socket;
                 _acceptor->accept(socket);
-                if (socket.native_handle() == -1)
+                if (socket.native_handle() != -1)
                 {
                     NetException err;
-                    this->_callback(err, socket);
+                    this->_callback(socket, err);
                 }
                 else
                 {
                     NetException err(errno, strerror(errno));
-                    this->_callback(err, socket);
+                    this->_callback(socket, err);
                 }
             }
             else if (ops & Selectable::OP::EXCEPT)
@@ -59,11 +57,6 @@ namespace net
         Selectable::native_handle_type Acceptor::AcceptorIOTask::native_handle()
         {
             return _acceptor->native_handle();
-        }
-
-        bool Acceptor::AcceptorIOTask::oneshot() 
-        {
-            return false;    
         }
 
         /*****************Acceptor************************/
@@ -159,16 +152,23 @@ namespace net
             struct sockaddr_in client_addr;
             socklen_t client_addr_len = sizeof(client_addr);
             int fd = ::accept(_native_handle, (struct sockaddr *)&client_addr, &client_addr_len);
-            Address socket_address = Posix::address(client_addr);
+            socket._remote_address = Posix::address(client_addr);
             socket._native_handle = fd;
-            socket._remote_address = new Address(socket_address);
+            if (client_addr.sin_family == AF_INET)
+            {
+                socket._protocol = new ProtocolV4();
+            }
+            else
+            {
+                socket._protocol = new ProtocolV6();
+            }
             socket.non_blocking(true);
             return;
         }
 
-        void Acceptor::accept(IOExecutor &executor, std::function<void(const NetException &, Socket &)> &&callback)
+        void Acceptor::accept(IOExecutor &executor, std::function<void(Socket &, const NetException &)> &&callback)
         {
-            std::shared_ptr<IOTask> task = std::make_shared<AcceptorIOTask>(this, std::forward<std::function<void(const NetException &, Socket &)>>(callback));
+            std::shared_ptr<IOTask> task = std::make_shared<AcceptorIOTask>(this, std::forward<std::function<void(Socket &, const NetException &)>>(callback));
             executor.push(task);
         }
 

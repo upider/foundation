@@ -30,17 +30,14 @@ namespace net
             private:
                 friend class Acceptor;
                 Acceptor *_acceptor;
-                std::function<void(const NetException &, Socket &)> _callback;
+                std::function<void(Socket &, const NetException &)> _callback;
 
             public:
-                AcceptorIOTask(Acceptor *acceptor);
-                AcceptorIOTask(Acceptor *acceptor, std::function<void(const NetException &except, Socket &)>&& callback);
-                void cb(std::function<void(const NetException &except, Socket &)>&& callback);
+                AcceptorIOTask(Acceptor *acceptor, std::function<void(Socket &, const NetException &except)>&& callback);
                 virtual ~AcceptorIOTask();
                 virtual void operator()(Selectable::OPCollection ops);
                 virtual Selectable::OPCollection interest();
                 virtual Selectable::native_handle_type native_handle();
-                virtual bool oneshot();
             };
 
             bool _non_blocking{true};
@@ -63,7 +60,7 @@ namespace net
             bool non_blocking();
             void non_blocking(bool non_block);
             void bind();
-            void listen(uint16_t backlog);
+            void listen(uint16_t backlog = 128);
             /**
              * @brief 同步accept
              * 
@@ -71,13 +68,14 @@ namespace net
              */
             void accept(Socket &socket);
             /**
-             * @brief 异步accept
+             * @brief 异步accept, io发生异常时Acceptor会被从IOExecutor中删除
+             *        Acceptor在等待事件发生时不能析构
              * 
              * @param socket 连接的socket
              * @param executor io线程池
              * @param cb 回调
              */
-            void accept(IOExecutor &executor, std::function<void(const NetException &, Socket &)> &&cb);
+            void accept(IOExecutor &executor, std::function<void(Socket &, const NetException &)> &&cb);
         };
 
     } // namespace tcp

@@ -45,56 +45,32 @@ namespace net
             return address;
         }
 
-        static inline Address address(const sockaddr_in &storage)
+        /**
+         * @brief 获得Address指针, 记得调用delete删除
+         * 
+         * @param storage sockaddr_in
+         * @return Address* address
+         */
+        static inline Address* address(const sockaddr_in &storage)
         {
-            Address address;
+            Address* address = nullptr;
             socklen_t sock_len = sizeof(storage);
             if (storage.sin_family == AF_INET)
             {
                 sockaddr_in *addr = (sockaddr_in *)&storage;
                 char ip[INET_ADDRSTRLEN];
                 ::inet_ntop(AF_INET, &addr->sin_addr, ip, sock_len);
-                address.ip(ip);
-                address.port(ntohs(addr->sin_port));
+                address = new Address(ip, ntohs(addr->sin_port));
             }
             else if (storage.sin_family == AF_INET6)
             {
                 sockaddr_in6 *addr = (sockaddr_in6 *)&storage;
                 char ip[INET6_ADDRSTRLEN];
                 ::inet_ntop(AF_INET6, &addr->sin6_addr, ip, sock_len);
-                address.ip(ip);
-                address.port(ntohs(addr->sin6_port));
+                address = new Address(ip, ntohs(addr->sin6_port));
             }
             return address;
         }
-
-        // static inline sockaddr_in remote_address(int fd)
-        // {
-        //     Address* address;
-        //     sockaddr_storage storage;
-        //     socklen_t sock_len = sizeof(storage); // 必须给初值
-        //     int ret = ::getpeername(fd, (sockaddr *)&storage, &sock_len);
-        //     if (ret == 0)
-        //     {
-        //         if (storage.ss_family == AF_INET)
-        //         {
-        //             sockaddr_in *addr = (sockaddr_in *)&storage;
-        //             char ip[INET_ADDRSTRLEN];
-        //             ::inet_ntop(AF_INET, &addr->sin_addr, ip, sock_len);
-        //             address.ip(ip);
-        //             address.port(ntohs(addr->sin_port));
-        //         }
-        //         else if (storage.ss_family == AF_INET6)
-        //         {
-        //             sockaddr_in6 *addr = (sockaddr_in6 *)&storage;
-        //             char ip[INET6_ADDRSTRLEN];
-        //             ::inet_ntop(AF_INET6, &addr->sin6_addr, ip, sock_len);
-        //             address.ip(ip);
-        //             address.port(ntohs(addr->sin6_port));
-        //         }
-        //     }
-        //     return address;
-        // }
     };
 
 } // namespace net

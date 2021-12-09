@@ -18,7 +18,7 @@ namespace net
         ~NetException();
 
         uint16_t code() const noexcept;
-        bool empty();
+        bool empty() const;
     };
 
 } // namespace net

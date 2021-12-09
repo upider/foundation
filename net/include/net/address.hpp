@@ -17,7 +17,7 @@ namespace net
         Address(uint16_t port);
         virtual ~Address();
 
-        virtual std::string to_string();
+        virtual std::string to_string() const;
         virtual std::string ip();
         virtual uint16_t port();
         virtual void ip(const std::string &ip);

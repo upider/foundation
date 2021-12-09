@@ -7,7 +7,7 @@ namespace net
     Address::Address(uint16_t port) : _port(port) {}
     Address::~Address() {}
 
-    std::string Address::to_string()
+    std::string Address::to_string() const
     {
         std::string str;
         str.append(_ip).append(":").append(std::to_string(_port));

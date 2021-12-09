@@ -12,8 +12,8 @@ namespace net
         return _code;
     }
 
-    bool NetException::empty() 
+    bool NetException::empty() const
     {
-        return (_code == 0 && what() == "");
+        return (_code == 0 && what()[0] == '\0');
     }
 } // namespace net

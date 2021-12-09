@@ -64,12 +64,12 @@ namespace net
 
         int Socket::read(void *data, std::size_t size)
         {
-            return ::recv(_native_handle, data, size, MSG_DONTWAIT);
+            return ::recv(_native_handle, data, size, 0);
         }
 
         int Socket::write(void *data, std::size_t size)
         {
-            return ::send(_native_handle, data, size, MSG_DONTWAIT);
+            return ::send(_native_handle, data, size, 0);
         }
 
         void Socket::read(void *data, std::size_t size, IOExecutor& executor, std::function<void(const NetException&, std::size_t bytes)>&& cb) 
