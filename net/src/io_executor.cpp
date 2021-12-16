@@ -7,7 +7,7 @@ namespace net
     {
         for (size_t i = 0; i < _thread_num; i++)
         {
-            _threads.push_back(std::thread(std::bind(&IOExecutor::operator(), this, i)));
+            _threads.push_back(std::thread(std::bind(&IOExecutor::worker, this, i)));
         }
     }
 

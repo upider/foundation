@@ -6,21 +6,33 @@
 #include <list>
 #include <vector>
 #include <atomic>
+#include <unordered_map>
 
 #include "net/select/selector.hpp"
 
 namespace net
 {
     class IOTask;
+    // TODO
     class IOExecutor
     {
     private:
+        struct SelectorThread
+        {
+        private:
+            select::Selector<int> selector;
+            std::thread thread;
+            std::unordered_map<select::Selectable::native_handle_type, std::pair<select::Selectable::OPCollection, std::list<std::shared_ptr<IOTask>>>> tasks;
+        public:
+            void add(std::shared_ptr<IOTask>);
+        };
+
+    private:
         std::atomic_bool _running{true};
         std::size_t _thread_num;
-        std::vector<select::Selector<std::shared_ptr<IOTask>>> _selectors;
-        std::list<std::thread> _threads;
+        std::list<SelectorThread> _threads;
 
-        void operator()(std::size_t n);
+        void worker(std::size_t n);
 
     public:
         IOExecutor(std::size_t threads = 1);

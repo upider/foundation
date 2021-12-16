@@ -18,6 +18,39 @@ namespace net
 {
     namespace tcp
     {
+        /*******************Socket::TCPSocketIOTask*********************/
+        Socket::TCPSocketIOTask::TCPSocketIOTask(Socket *socket, std::function<void(std::size_t bytes, const NetException &except)> &&callback)
+        : _socket(socket), _callback(std::forward<std::function<void(std::size_t bytes, const NetException &except)>>(callback)) {}
+
+        Socket::TCPSocketIOTask::~TCPSocketIOTask() {}
+
+        void Socket::TCPSocketIOTask::operator()(Selectable::OPCollection ops)
+        {
+            if (ops & Selectable::OP::EXCEPT)
+            {
+            }
+            else if (ops & Selectable::OP::REMOTE_CLOSE)
+            {
+            }
+            else if (ops & Selectable::OP::READ)
+            {
+            }
+            else if (ops & Selectable::OP::WRITE)
+            {
+            }
+        }
+
+        Selectable::OPCollection Socket::TCPSocketIOTask::interest()
+        {
+            return 0;
+        }
+
+        Selectable::native_handle_type Socket::TCPSocketIOTask::native_handle()
+        {
+            return _socket->native_handle();
+        }
+
+        /******************Socket**********************/
         Socket::Socket(const ProtocolV4 &protocol, const Address &remote) : _protocol(new ProtocolV4(protocol)), _remote_address(new Address(remote))
         {
             _native_handle = ::socket(_protocol->family(), _protocol->type(), _protocol->protocol());
@@ -62,24 +95,14 @@ namespace net
             Posix::non_blocking(_native_handle, non_block);
         }
 
-        int Socket::read(void *data, std::size_t size)
+        void Socket::recv(void *data, std::size_t size, IOExecutor &executor, std::function<void(std::size_t bytes, const NetException &except)> &&cb)
         {
-            return ::recv(_native_handle, data, size, 0);
         }
 
-        int Socket::write(void *data, std::size_t size)
+        void Socket::send(void *data, std::size_t size, IOExecutor &executor, std::function<void(std::size_t bytes, const NetException &except)> &&cb)
         {
-            return ::send(_native_handle, data, size, 0);
         }
 
-        void Socket::read(void *data, std::size_t size, IOExecutor& executor, std::function<void(const NetException&, std::size_t bytes)>&& cb) 
-        {
-        }
-        
-        void Socket::write(void *data, std::size_t size, IOExecutor& executor, std::function<void(const NetException&, std::size_t bytes)>&& cb) 
-        {
-        }
-        
         void Socket::shutdown(int shut_type)
         {
             if (_native_handle < 1 || shut_type < SHUT_RD || shut_type > SHUT_RDWR)

@@ -48,7 +48,7 @@ namespace net
              * 
              * @param ops 监听的selectable操作集合
              */
-            void select(Selectable::OPCollection ops);
+            void interest(Selectable::OPCollection ops);
         };
 
         template <typename T>
@@ -89,7 +89,7 @@ namespace net
         }
 
         template <typename T>
-        void Selected<T>::select(Selectable::OPCollection ops)
+        void Selected<T>::interest(Selectable::OPCollection ops)
         {
             _selector->mod(_evdata->fd, ops, _evdata);
         }
